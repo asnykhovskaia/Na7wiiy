@@ -1,1 +1,45 @@
+#заготовка для бота
+#текст будем менять, он пока для примера
 
+import telebot
+
+token = "..."
+bot = telebot.TeleBot(token)
+
+@bot.message_handler(commands=["start"])
+def start_message(message):
+    bot.send_message(message.chat.id, "marhaban!\n"
+                          "Я Грамматист, бот-тренажёр арабской грамматики\n"
+                          "Чтобы потренироваться в переводе предложений на арабский, нажмите /sentence\n"
+                          "Если вы хотите узнать форму арабского слова, нажмите /form\n"
+                          "Чтобы просмотреть грамматический конспект, нажмите /grammar\n"
+                          "Чтобы ещё раз увидеть инструкцию, нажмите /instruction\n"
+                          "Когда пишете по-арабски, пожалуйста, используйте транслитерацию\n"
+                          "Удачи!")
+
+@bot.message_handler(commands=["sentence"])
+def make_sentence(message):
+    ...
+    rus_sentence = "..."
+    ar_sentence = "..."
+    bot.reply_to(message, "Переведите предложение на арабский:\n" + rus_sentence)
+    @bot.message_handler(func=lambda new_message: True)
+    def handle_message(new_message, ar_sentence):
+        if message.text == ar_sentence:
+            bot.reply_to(new_message, "Правильно!")
+        else:
+            bot.reply_to(new_message, "К сожалению, вы ошиблись. Возможно, стоит обратиться к конспекту: /grammar")
+
+@bot.message_handler(commands=["form"])
+def define_form(message):
+    ...
+    form = "..."
+    bot.reply_to(message, form)
+
+@bot.message_handler(commands=["instruction"])
+def instruct(message):
+    bot.reply_to(message, "Получить предложение для перевода на арабский: /sentence\n"
+                          "Узнать форму арабского слова: /form\n"
+                          "Просмотреть грамматический конспект: /grammar\n")
+
+bot.polling(none_stop=True, interval=0)
