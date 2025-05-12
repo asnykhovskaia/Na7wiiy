@@ -73,3 +73,63 @@ def verb_gen(form, verb, vow, der, weak):
         else:
             verb += "u"
     return verb
+
+
+#склонение
+#формат переменных пока такой: арабское слово, состояние (def/indef), падеж (nom/gen/acc), число (sg/pl)
+def declension(word: str, condition: str, form: str, num: str):
+    ends = {"nom": "u", "gen": "i", "acc": "a"}
+    assamsu = {"t", "d", "r", "z", "s", "n", "š", "ṯ", "ḏ", "ṣ", "ḍ", "ṭ", "ẓ"}
+    if num == "pl":
+        result = pl_declension(word, condition, form, d)
+        if condition == "indef":
+            return result
+        else:
+            word = result
+    else:
+        word = word + ends[form]
+    if condition == "indef":
+        return word + "n"
+    elif condition == "def":
+        if word[-1] == "ū" or word[-1] == "ī":
+            word = word + "na"
+        if word[0] in assamsu:
+            return "a" + word[0] + "-" + word
+        else:
+            return "al-" + word
+    elif condition == "constr":
+        return word
+
+
+def pl_declension(word: str, condition: str, form: str, d: dict):
+    if d[word] == 1:
+        if word[-2:] == "at":
+            word = word[:-2] + "āt"
+            if form == "nom":
+                word = word + "u"
+            else:
+                word = word + "i"
+            if condition == "indef":
+                word = word + "n"
+            return word
+        else:
+            if form == "nom":
+                word = word + "ū"
+            else:
+                word = word + "ī"
+            if condition == "indef":
+                word = word + "na"
+            return word
+    elif dict[word] == 0:
+        word = word
+    elif type(dict[word]) is str:
+        word = dict[word]
+    if form == "nom":
+        word = word + "u"
+    elif form == "gen":
+        word = word + "i"
+    elif form == "acc":
+        word = word + "a"
+    if condition == "indef":
+        word = word + "n"
+    return word
