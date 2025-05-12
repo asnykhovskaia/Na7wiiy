@@ -1,1 +1,74 @@
-
+#морфология глагола (будет дополняться)
+def verb_gen(form, verb, vow, der, weak):
+    vows = ["a", "i", "u", ["ā", "ī", "ū"]]
+    verb = verb[:-1]
+    if form[0] == "perf":
+        if form[1] == "3msg":
+            verb += "a"
+        elif form[1] == "3fsg":
+            verb += "at"
+        elif form[1] == "2msg":
+            verb += "ta"
+        elif form[1] == "2fsg":
+            verb += "ti"
+        elif form[1] == "1sg":
+            verb += "tu"
+        elif form[1] == "3mdu":
+            verb += "ā"
+        elif form[1] == "3fdu":
+            verb += "atā"
+        elif form[1] == "2du":
+            verb += "tumā"
+        elif form[1] == "1dp":
+            verb += "nā"
+        elif form[1] == "3mpl":
+            verb += "ū"
+        elif form[1] == "3fpl":
+            verb += "na"
+        elif form[1] == "2mpl":
+            verb += "tum"
+        elif form[1] == "2fpl":
+            verb += "tunna"
+    elif form[0] == "imp":
+        if der == 1:
+            verb = verb[0] + verb[2] + vow + verb[4]
+        else:
+            verb = verb[:-2] + vow + verb[-1]
+        if verb[0] == "i":
+            verb = verb[1:]
+        if der == 1 or der > 4:
+            if form[1] == "3msg" or form[1] == "3mdu" or form[1] == "3mpl" or form[1] == "3fpl":
+                verb = "ya" + verb
+            elif form[1] == "1sg":
+                verb = "ˀa" + verb
+                if "ˀaˀ" in verb:
+                   verb = "ˀā" + verb[4:]
+                # диссимиляция хамзы
+            elif form[1] == "1dp":
+                verb = "na" + verb
+            else:
+                verb = "ta" + verb
+        if der > 1 and der < 5:
+            if der == 4 and "ˀā" not in verb:
+                verb = verb[2:]
+            if form[1] == "3msg" or form[1] == "3mdu" or form[1] == "3mpl" or form[1] == "3fpl":
+                verb = "yu" + verb
+            elif form[1] == "1sg":
+                verb = "ˀu" + verb
+                if "ˀuˀ" in verb:
+                   verb = "ˀū" + verb[4:]
+                # диссимиляция хамзы
+            elif form[1] == "1dp":
+                verb = "nu" + verb
+            else:
+                verb = "tu" + verb
+        if "du" in form[1]:
+            verb += "āni"
+        elif "mpl" in form[1]:
+            verb += "ūna"
+        elif "fpl" in form[1]:
+            verb += "na"
+        elif "2fsg" in form[1]:
+            verb += "īna"
+        else:
+            verb += "u"
