@@ -72,3 +72,4 @@ def verb_gen(form, verb, vow, der, weak):
             verb += "īna"
         else:
             verb += "u"
+    return verb
