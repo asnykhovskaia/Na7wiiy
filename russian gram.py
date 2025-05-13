@@ -86,6 +86,13 @@ verb_forms = [
     if 'VERB' in form.tag and 'impr' not in form.tag
 ]
 verb_personal = random.choice(verb_forms)
+
+verb_forms_full = [
+    form.word for form in morph.parse(verb)[0].lexeme
+    if 'VERB' in form.tag
+]
+verb_personal_full = random.choice(verb_forms_full)
+
 determiner = random.choice(list(determiners.keys()))
 preposition = random.choice(list(prepositions.keys()))
 
@@ -105,99 +112,155 @@ def structure_VP():
             if adj_NP1_animacy_check == None:
                 adj_NP1_animacy_check = 'inan'
 
-            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
-                {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+            if noun_acc_number_choice == 'sing':
+                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+            else:
+                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                    {noun_acc_number_choice, adj_NP1_animacy_check, 'accs'})
             if used_adj_modified_1 is not None:
                 used_adj[0] = used_adj_modified_1.word
             else:
-                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({noun_acc_number_choice, 'accs'})
                 if used_adj_modified_1 is not None:
                     used_adj[0] = used_adj_modified_1.word
             if amount_adj > 1:
-                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                        {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                        {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                 if used_adj_modified_2 is not None:
                     used_adj[1] = used_adj_modified_2.word
                 else:
-                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                            {noun_acc_number_choice, 'accs'})
                     if used_adj_modified_2 is not None:
                         used_adj[1] = used_adj_modified_2.word
             if amount_adj > 2:
-                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                        {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                        {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                 if used_adj_modified_3 is not None:
                     used_adj[2] = used_adj_modified_3.word
                 else:
-                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                            {noun_acc_number_choice, 'accs'})
                     if used_adj_modified_3 is not None:
                         used_adj[2] = used_adj_modified_3.word
             NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
         elif structure_NP_podtype == 2:
-            adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
-            adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
-            if adjective_NP2 != False:
-                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, 'loct'}).word
+          adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+          adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+          if adjective_NP2 != False:
+            if noun_loc_number_choice == 'sing':
+                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, noun_loc_number_choice, 'loct'}).word
+            else:
+                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect(
+                    {noun_loc_number_choice, 'loct'}).word
 
-            adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+          adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
 
-            NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
+          NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
 
         return f"{verb} {NP}"
 
     elif structure_VP_podtype == 2:
-        return verb_personal
+            return verb_personal_full
 
     elif structure_VP_podtype == 3:
-        structure_NP_podtype = random.choice([1, 2])
-        if structure_NP_podtype == 1:
-            amount_adj = random.choice([1, 2, 3])
-            used_adj = random.sample(sorted(adjs.keys()), amount_adj)
-            if amount_adj == 3:
-                used_adj[0] = determiner
-            adj_NP1_gender_check = morph.parse(noun_acc)[0].tag.gender
-            adj_NP1_animacy_check = morph.parse(noun_acc)[0].tag.animacy
-            if adj_NP1_animacy_check == None:
-                adj_NP1_animacy_check = 'inan'
-            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
-                {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
-            if used_adj_modified_1 is not None:
-                used_adj[0] = used_adj_modified_1.word
-            else:
-                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, 'accs'})
+            structure_NP_podtype = random.choice([1, 2])
+            if structure_NP_podtype == 1:
+                amount_adj = random.choice([1, 2, 3])
+                used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                if amount_adj == 3:
+                    used_adj[0] = determiner
+                adj_NP1_gender_check = morph.parse(noun_acc)[0].tag.gender
+                adj_NP1_animacy_check = morph.parse(noun_acc)[0].tag.animacy
+                if adj_NP1_animacy_check == None:
+                    adj_NP1_animacy_check = 'inan'
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                        {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                        {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                 if used_adj_modified_1 is not None:
                     used_adj[0] = used_adj_modified_1.word
-            if amount_adj > 1:
-                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
-                if used_adj_modified_2 is not None:
-                    used_adj[1] = used_adj_modified_2.word
                 else:
-                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                            {noun_acc_number_choice, 'accs'})
+                    if used_adj_modified_1 is not None:
+                        used_adj[0] = used_adj_modified_1.word
+                if amount_adj > 1:
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                            {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+                    else:
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                            {noun_acc_number_choice, adj_NP1_animacy_check, 'accs'})
                     if used_adj_modified_2 is not None:
                         used_adj[1] = used_adj_modified_2.word
-            if amount_adj > 2:
-                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
-                if used_adj_modified_3 is not None:
-                    used_adj[2] = used_adj_modified_3.word
-                else:
-                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    else:
+                        if noun_acc_number_choice == 'sing':
+                            used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                        else:
+                            used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                {noun_acc_number_choice, 'accs'})
+                        if used_adj_modified_2 is not None:
+                            used_adj[1] = used_adj_modified_2.word
+                if amount_adj > 2:
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                            {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                            {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                     if used_adj_modified_3 is not None:
                         used_adj[2] = used_adj_modified_3.word
+                    else:
+                        if noun_acc_number_choice == 'sing':
+                            used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                        else:
+                            used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
 
-            NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
+                        if used_adj_modified_3 is not None:
+                            used_adj[2] = used_adj_modified_3.word
 
-        elif structure_NP_podtype == 2:
-            adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
-            adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
-            if adjective_NP2 != False:
-                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, 'loct'}).word
+                NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
 
-            adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+            elif structure_NP_podtype == 2:
+              adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+              adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+              if adjective_NP2 != False:
+                if noun_loc_number_choice == 'sing':
+                    adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, noun_loc_number_choice, 'loct'}).word
+                else:
+                    adjective_NP2 = morph.parse(adjective_NP2)[0].inflect(
+                        {noun_loc_number_choice, 'loct'}).word
 
-            NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
+              adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
 
-        return f"{verb_personal} {NP}"
+              NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
+            return f"{verb_personal} {NP}"
 
 
 def structure_V():
@@ -214,44 +277,72 @@ def structure_V():
             adj_NP1_animacy_check = morph.parse(noun_nom)[0].tag.animacy
             if adj_NP1_animacy_check == None:
                 adj_NP1_animacy_check = 'inan'
-            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
-                {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+            if noun_acc_number_choice == 'sing':
+                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                    {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+            else:
+                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                    {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
             if used_adj_modified_1 is not None:
                 used_adj[0] = used_adj_modified_1.word
             else:
-                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                        {noun_acc_number_choice, 'accs'})
                 if used_adj_modified_1 is not None:
                     used_adj[0] = used_adj_modified_1.word
             if amount_adj > 1:
-                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                        {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                        {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                 if used_adj_modified_2 is not None:
                     used_adj[1] = used_adj_modified_2.word
                 else:
-                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check,  noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                            {noun_acc_number_choice, 'accs'})
                     if used_adj_modified_2 is not None:
                         used_adj[1] = used_adj_modified_2.word
             if amount_adj > 2:
-                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
-                    {adj_NP1_gender_check, adj_NP1_animacy_check, 'accs'})
+                if noun_acc_number_choice == 'sing':
+                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                        {adj_NP1_gender_check, adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
+                else:
+                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                        {adj_NP1_animacy_check, noun_acc_number_choice, 'accs'})
                 if used_adj_modified_3 is not None:
                     used_adj[2] = used_adj_modified_3.word
                 else:
-                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check, 'accs'})
+                    if noun_acc_number_choice == 'sing':
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check, noun_acc_number_choice, 'accs'})
+                    else:
+                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                            {noun_acc_number_choice, 'accs'})
                     if used_adj_modified_3 is not None:
                         used_adj[2] = used_adj_modified_3.word
 
             NP = f"{' '.join(used_adj)} {noun_nom}{dual_nom}"
 
         elif structure_NP_podtype == 2:
-            adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
-            adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
-            if adjective_NP2 != False:
-                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, 'loct'}).word
+          adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+          adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+          if adjective_NP2 != False:
+            if noun_loc_number_choice == 'sing':
+                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, noun_loc_number_choice, 'loct'}).word
+            else:
+                adjective_NP2 = morph.parse(adjective_NP2)[0].inflect(
+                    {noun_loc_number_choice, 'loct'}).word
 
-            adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+          adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
 
-            NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
+          NP = f"{noun_acc}{dual_acc} {preposition} {noun_loc}{dual_loc}{adjective_NP2_return}"
 
         noun_gender_check = morph.parse(noun_nom)[0].tag.gender
         noun_number_check = morph.parse(noun_nom)[0].tag.number
@@ -265,7 +356,7 @@ def structure_V():
             grammemes.add(noun_number_check)
         else:
             grammemes.add('sing')
-        if noun_number_check == 'sing' and verb_tense_check == 'past' and noun_gender_check:
+        if noun_number_check == 'sing'and verb_tense_check == 'past' and noun_gender_check:
             grammemes.add(noun_gender_check)
         inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
         return f"{inflected_verb} {noun_nom}{dual_nom}"
@@ -281,25 +372,38 @@ def structure_NP():
         if amount_adj == 3:
             used_adj[0] = determiner
         adj_NP1_gender_check = morph.parse(noun_nom)[0].tag.gender
-        used_adj[0] = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check}).word
+        if noun_nom_number_choice == 'sing':
+            used_adj[0] = morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check}).word
+        else:
+            used_adj[0] = morph.parse(used_adj[0])[0].inflect({noun_nom_number_choice}).word
 
         if amount_adj > 1:
-            used_adj[1] = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check}).word
+            if noun_nom_number_choice == 'sing':
+                used_adj[1] = morph.parse(used_adj[1])[0].inflect({adj_NP1_gender_check}).word
+            else:
+                used_adj[1] = morph.parse(used_adj[1])[0].inflect({noun_nom_number_choice}).word
 
         if amount_adj > 2:
-            used_adj[2] = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check}).word
+            if noun_nom_number_choice == 'sing':
+                used_adj[2] = morph.parse(used_adj[2])[0].inflect({adj_NP1_gender_check}).word
+            else:
+                used_adj[2] = morph.parse(used_adj[2])[0].inflect({noun_nom_number_choice}).word
 
         return f"{' '.join(used_adj)} {noun_nom}{dual_nom}"
 
     elif structure_NP_podtype == 2:
-        adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
-        adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
-        if adjective_NP2 != False:
-            adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, 'loct'}).word
+      adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+      adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+      if adjective_NP2 != False:
+        if noun_loc_number_choice == 'sing':
+            adjective_NP2 = morph.parse(adjective_NP2)[0].inflect({adj_NP2_gender_check, noun_loc_number_choice, 'loct'}).word
+        else:
+            adjective_NP2 = morph.parse(adjective_NP2)[0].inflect(
+                {noun_loc_number_choice, 'loct'}).word
 
-        adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+      adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
 
-        return f"{noun_nom}{dual_nom} {preposition} {adjective_NP2_return} {noun_loc}{dual_loc}"
+      return f"{noun_nom}{dual_nom} {preposition} {adjective_NP2_return} {noun_loc}{dual_loc}"
 
     elif structure_NP_podtype == 3:
         adjective_NP3_1 = random.choice([False, random.choice(list(adjs.keys()))])
@@ -307,7 +411,10 @@ def structure_NP():
         adj_NP3_1_gender_check = morph.parse(noun_nom)[0].tag.gender
 
         if adjective_NP3_1 != False:
-            adjective_NP3_1 = morph.parse(adjective_NP3_1)[0].inflect({adj_NP3_1_gender_check}).word
+            if noun_nom_number_choice == 'sing':
+                adjective_NP3_1 = morph.parse(adjective_NP3_1)[0].inflect({adj_NP3_1_gender_check}).word
+            else:
+                adjective_NP3_1 = morph.parse(adjective_NP3_1)[0].inflect({noun_nom_number_choice}).word
         adjective_NP3_1_return = f" {adjective_NP3_1}" if adjective_NP3_1 else ""
 
         adjective_NP3_2 = random.choice([False, random.choice(list(adjs.keys()))])
@@ -319,15 +426,23 @@ def structure_NP():
         adjective_NP3_2_return = ""
 
         if adjective_NP3_2:
-            adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
-                {adj_NP3_2_gender_check, adj_NP3_2_animacy_check, 'gent'})
+            if noun_gen_number_choice == 'sing':
+                adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                    {adj_NP3_2_gender_check, adj_NP3_2_animacy_check, noun_gen_number_choice, 'gent'})
+            else:
+                adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                    {adj_NP3_2_animacy_check, noun_gen_number_choice, 'gent'})
 
             if adjective_NP3_2_modified is None:
-                adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
-                    {adj_NP3_2_gender_check, 'gent'})
+                if noun_gen_number_choice == 'sing':
+                    adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                        {adj_NP3_2_gender_check, noun_gen_number_choice, 'gent'})
+                else:
+                    adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                        {noun_gen_number_choice, 'gent'})
 
             if adjective_NP3_2_modified:
-                adjective_NP3_2_return = f" {adjective_NP3_2_modified.word}"
+              adjective_NP3_2_return = f" {adjective_NP3_2_modified.word}"
 
         return f"{adjective_NP3_1_return} {noun_nom}{dual_nom} {adjective_NP3_2_return} {noun_gen}{dual_gen}"
 
@@ -390,3 +505,4 @@ elif structure_choice == 2:
     print(structure_NP())
 else:
     print(structure_V())
+    
