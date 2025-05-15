@@ -101,6 +101,67 @@ def verb_gen(form, verb, vow, der, weak):
             verb = verb[:zero] + verb[zero+1:]
         else:
             verb = verb.replace("0", "w")
+
+    #второй слабый -- вроде работает
+    if weak == 2:
+        verb = verb[:zero] + verb[zero+1:]
+        if der == 1 and form[0] == "perf":
+            if vow == "i" or vow == "a":
+                verb = verb[:zero] + "i" + verb[zero+1:]
+            elif vow == "u":
+                verb = verb[:zero] + "u" + verb[zero+1:]
+        if form[0] == "perf":
+             if verb[zero+2] not in vows and verb[zero+2] not in vows[3]:
+                if verb[zero-1] in vows:
+                    verb = verb[:zero-1] + verb[zero:]
+             else:
+                if verb[zero-1] in vows:
+                    verb = verb[:zero-1] + "ā" + verb[zero+1:]
+                else:
+                    verb = verb[:zero] + "ā" + verb[zero+1:]
+        else:
+            if verb[zero+2] in vows or verb[zero+2] in vows[3]:
+                verb = verb[:zero] + vows[3][vows.index(verb[zero])] + verb[zero+1:]
+            if verb[zero-1] in vows:
+                verb = verb[:zero-1] + verb[zero:]
+
+    #третий слабый
+    if zero != -1 and weak == 3:
+        #если в основе а -- теперь работает
+        if verb[zero-1] == "a":
+            if verb[zero + 1] not in vows[3] and verb[zero + 1] in vows: #and (zero == len(verb) - 3 and verb[-2] in vows or zero > len(verb) - 3):
+                if verb[zero-1] in vows and verb[zero+1] in vows:
+                    verb = verb[:zero+1] + verb[zero+2:]
+                    if verb[-1] == "0" or verb[zero+1] in vows:
+                        verb = verb.replace(verb[zero-1] + "0", vows[3][vows.index(verb[zero-1])] + "0")
+                verb = verb[:zero] + verb[zero+1:]
+            if verb[zero-1] in vows:
+                verb = verb.replace("0ū", "w")
+                verb = verb.replace("0ī", "y")
+            if vow == "i" or vow == "a":
+                verb = verb.replace("0", "y")
+            elif vow == "u":
+                verb = verb.replace("0", "w")
+        #если в основе не а -- теперь работает
+        elif verb[zero-1] != "a":
+            if verb[zero+1] != "a" and verb[zero+1] != "ā":
+                verb = verb[:zero] + verb[zero+1:]
+                if verb[zero-1] in vows and verb[zero] in vows[3]:
+                    verb = verb[:zero-1] + verb[zero:]
+                if verb[zero-1] in vows and verb[zero-1] not in vows[3]:
+                    if verb[zero] == "t":
+                        verb = verb.replace(verb[zero-1] + "t", vows[3][vows.index(verb[zero-1])] + "t")
+                    elif verb[zero] == "n":
+                        verb = verb.replace(verb[zero-1] + "n", vows[3][vows.index(verb[zero-1])] + "n")
+                    elif verb[zero-1] == verb[-2]:
+                        verb = verb.replace(verb[zero-1], vows[3][vows.index(verb[zero-1])])
+                    if verb[zero] in vows or verb[zero] in vows[3]:
+                        verb = verb[:zero] + verb[zero+1:]
+            if vow == "i" or vow == "a":
+                verb = verb.replace("0", "y")
+            elif vow == "u":
+                verb = verb.replace("0", "w")
+
     return verb
 
 
@@ -161,4 +222,5 @@ def pl_declension(word: str, condition: str, form: str, d: dict):
         word = word + "a"
     if condition == "indef":
         word = word + "n"
+
     return word
