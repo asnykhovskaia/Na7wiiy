@@ -39,13 +39,13 @@ def rus_to_arab():
         else:
             sent.append(declension(GRAM["S1"]))
     if "AO11" in GRAM.keys():
-        sent.append(declension(GRAM["AO11"]), declension(GRAM["O1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
+        sent.append(declension(GRAM["AO11"]), declension(GRAM["OA1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
     elif "AO13" in GRAM.keys():
-        sent.append(declension(GRAM["O1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
+        sent.append(declension(GRAM["OA1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
     elif "AO12" in GRAM.keys():
-        sent.append(declension(GRAM["O1"]), declension(GRAM["AO12"]))
-    elif "O1" in GRAM.keys():
-        sent.append(declension(GRAM["O1"]))
+        sent.append(declension(GRAM["OA1"]), declension(GRAM["AO12"]))
+    elif "OA1" in GRAM.keys():
+        sent.append(declension(GRAM["OA1"]))
     if "AOL" in GRAM.keys() & "OL1" in GRAM.keys():
         sent.append(GRAM["PREP"], declension(GRAM["OL1"]), declension(GRAM["AOL"]))
     elif "OL1" in GRAM.keys():
@@ -83,13 +83,13 @@ def rus_to_arab():
             else:
                 sent.append(declension(GRAM["S2"]))
         if "AO21" in GRAM.keys():
-            sent.append(declension(GRAM["AO21"]), declension(GRAM["O2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
+            sent.append(declension(GRAM["AO21"]), declension(GRAM["OA2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
         elif "AO23" in GRAM.keys():
-            sent.append(declension(GRAM["O2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
+            sent.append(declension(GRAM["OA2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
         elif "AO22" in GRAM.keys():
-            sent.append(declension(GRAM["O2"]), declension(GRAM["AO22"]))
-        elif "O2" in GRAM.keys():
-            sent.append(declension(GRAM["O2"]))
+            sent.append(declension(GRAM["OA2"]), declension(GRAM["AO22"]))
+        elif "OA2" in GRAM.keys():
+            sent.append(declension(GRAM["OA2"]))
         if "AOL" in GRAM.keys() and "OL2" in GRAM.keys():
             sent.append(GRAM["PREP"], declension(GRAM["OL2"]), declension(GRAM["AOL"]))
         elif "OL2" in GRAM.keys():
