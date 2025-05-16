@@ -172,7 +172,7 @@ def verb_gen(gram: list):
 
 
 #склонение
-#формат переменных пока такой: арабское слово, состояние (def/indef), падеж (nom/gen/acc), число (sg/pl)
+#формат переменных пока такой: арабское слово, состояние (def/indef), падеж (nom/gen/acc), число (sg/dual/pl)
 def declension(noun: list):
     global nouns
     word = noun[0]
@@ -187,6 +187,17 @@ def declension(noun: list):
             return result
         else:
             word = result
+    elif num == "dual":
+        if form == "nom"
+            word = word + "ā"
+        else:
+            word = word + "ay"
+        if condition == "constr":
+            return word
+        else:
+            word = word + "ni"
+        if condition == "indef":
+            return word
     else:
         word = nouns[word][0] + ends[form]
     if condition == "indef":
