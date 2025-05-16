@@ -186,7 +186,7 @@ def structure_VP():
         verb = random.choice(list(verbs.items()))[0]
         verb_forms = [
             form.word for form in morph.parse(verb)[0].lexeme
-            if 'VERB' in form.tag and 'impr' not in form.tag
+            if 'VERB' in form.tag and 'impr' not in form.tag and 'past' not in form.tag
         ]
         verb_personal = random.choice(verb_forms)
         return verb_personal
@@ -277,7 +277,7 @@ def structure_VP():
                     break
             verb_forms = [
                 form.word for form in morph.parse(verb)[0].lexeme
-                if 'VERB' in form.tag and 'impr' not in form.tag
+                if 'VERB' in form.tag and 'impr' not in form.tag and 'past' not in form.tag
             ]
             verb_personal = random.choice(verb_forms)
 
@@ -615,6 +615,11 @@ def structure_NP():
             VP_NP5 = f"{inflected_verb} {noun_nom}{dual_nom}"
 
         elif VP_NP5_num == 2:
+            verb_forms = [
+                form.word for form in morph.parse(verb)[0].lexeme
+                if 'VERB' in form.tag and 'impr' not in form.tag and 'past' not in form.tag
+            ]
+            verb_personal = random.choice(verb_forms)
             VP_NP5 = verb_personal
 
         that5_gender_check = morph.parse(noun_nom)[0].tag.gender
