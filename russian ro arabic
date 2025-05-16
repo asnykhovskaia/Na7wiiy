@@ -1,94 +1,100 @@
 GRAM = {}
 
+GRAM = {
+    "V1": [["imp", i], "0agata", "u", 1, 1],
+    "S1": ["imra'at", "indef", "nom", "sg"],
+}
+
 def rus_to_arab():
     sent = []
     global GRAM
     # не забыть прописать отдельно шаг работы с большим словарём
     sent = [verb_gen(GRAM["V1"])]
-    if "AS11" in GRAM:
-        if "AOG" in GRAM:
+    if "AS11" in GRAM.keys():
+        if "AOG" in GRAM.keys():
             sent.append(declension(GRAM["AS11"]), declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AOG"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
-        elif "OG1" in GRAM:
+        elif "OG1" in GRAM.keys():
             sent.append(declension(GRAM["AS11"]), declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
         else:
             sent.append(declension(GRAM["AS11"]), declension(GRAM["S1"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
-    elif "AS13" in GRAM:
-        if "AOG" in GRAM:
+    elif "AS13" in GRAM.keys():
+        if "AOG" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AOG"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
-        elif "OG1" in GRAM:
+        elif "OG1" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
         else:
             sent.append(declension(GRAM["S1"]), declension(GRAM["AS12"]), declension(GRAM["AS13"]))
-    elif "AS12" in GRAM:
-        if "AOG" in GRAM:
+    elif "AS12" in GRAM.keys():
+        if "AOG" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AOG"]), declension(GRAM["AS12"]))
-        elif "OG1" in GRAM:
+        elif "OG1" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AS12"]))
         else:
             sent.append(declension(GRAM["S1"]), declension(GRAM["AS12"]))
-    elif "S1" in GRAM:
-        if "AOG" in GRAM:
+    elif "S1" in GRAM.keys():
+        if "AOG" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]), declension(GRAM["AOG"]))
-        elif "OG1" in GRAM:
+        elif "OG1" in GRAM.keys():
             sent.append(declension(GRAM["S1"]), declension(GRAM["OG1"]))
         else:
             sent.append(declension(GRAM["S1"]))
-    if "AO11" in GRAM:
+    if "AO11" in GRAM.keys():
         sent.append(declension(GRAM["AO11"]), declension(GRAM["O1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
-    elif "AO13" in GRAM:
+    elif "AO13" in GRAM.keys():
         sent.append(declension(GRAM["O1"]), declension(GRAM["AO12"]), declension(GRAM["AO13"]))
-    elif "AO12" in GRAM:
+    elif "AO12" in GRAM.keys():
         sent.append(declension(GRAM["O1"]), declension(GRAM["AO12"]))
-    elif "O1" in GRAM:
+    elif "O1" in GRAM.keys():
         sent.append(declension(GRAM["O1"]))
-    if "AOL" in GRAM & "OL1" in GRAM:
+    if "AOL" in GRAM.keys() & "OL1" in GRAM.keys():
         sent.append(GRAM["PREP"], declension(GRAM["OL1"]), declension(GRAM["AOL"]))
-    elif "OL1" in GRAM:
+    elif "OL1" in GRAM.keys():
         sent.append(GRAM["PREP"], declension(GRAM["OL1"]))
     # не забыть написать функцию для THAT
-    if "THAT" in GRAM:
+    if "THAT" in GRAM.keys():
         sent.append(GRAM["THAT"])
         sent.append(verb_gen(GRAM["V2"]))
-        if "AS21" in GRAM:
-            if "AOG" in GRAM:
+        if "AS21" in GRAM.keys():
+            if "AOG" in GRAM.keys():
                 sent.append(declension(GRAM["AS21"]), declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AOG"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
-            elif "OG2" in GRAM:
+            elif "OG2" in GRAM.keys():
                 sent.append(declension(GRAM["AS21"]), declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
             else:
                 sent.append(declension(GRAM["AS21"]), declension(GRAM["S2"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
-        elif "AS23" in GRAM:
-            if "AOG" in GRAM:
+        elif "AS23" in GRAM.keys():
+            if "AOG" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AOG"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
-            elif "OG2" in GRAM:
+            elif "OG2" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
             else:
                 sent.append(declension(GRAM["S2"]), declension(GRAM["AS22"]), declension(GRAM["AS23"]))
-        elif "AS22" in GRAM:
-            if "AOG" in GRAM:
+        elif "AS22" in GRAM.keys():
+            if "AOG" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AOG"]), declension(GRAM["AS22"]))
-            elif "OG2" in GRAM:
+            elif "OG2" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AS22"]))
             else:
                 sent.append(declension(GRAM["S2"]), declension(GRAM["AS22"]))
-        elif "S2" in GRAM:
-            if "AOG" in GRAM:
+        elif "S2" in GRAM.keys():
+            if "AOG" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]), declension(GRAM["AOG"]))
-            elif "OG2" in GRAM:
+            elif "OG2" in GRAM.keys():
                 sent.append(declension(GRAM["S2"]), declension(GRAM["OG2"]))
             else:
                 sent.append(declension(GRAM["S2"]))
-        if "AO21" in GRAM:
+        if "AO21" in GRAM.keys():
             sent.append(declension(GRAM["AO21"]), declension(GRAM["O2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
-        elif "AO23" in GRAM:
+        elif "AO23" in GRAM.keys():
             sent.append(declension(GRAM["O2"]), declension(GRAM["AO22"]), declension(GRAM["AO23"]))
-        elif "AO22" in GRAM:
+        elif "AO22" in GRAM.keys():
             sent.append(declension(GRAM["O2"]), declension(GRAM["AO22"]))
-        elif "O2" in GRAM:
+        elif "O2" in GRAM.keys():
             sent.append(declension(GRAM["O2"]))
-        if "AOL" in GRAM & "OL2" in GRAM:
+        if "AOL" in GRAM.keys() and "OL2" in GRAM.keys():
             sent.append(GRAM["PREP"], declension(GRAM["OL2"]), declension(GRAM["AOL"]))
-        elif "OL2" in GRAM:
+        elif "OL2" in GRAM.keys():
             sent.append(GRAM["PREP"], declension(GRAM["OL2"]))
+    return sent
 
 
 # место для генерации русского предложения и заполнения GRAM
