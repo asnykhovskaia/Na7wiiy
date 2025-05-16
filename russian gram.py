@@ -23,6 +23,11 @@ verbs = {
     "подумать": ['madrasat'],
     "повеситься": ['ǧāmiʿat']
 }
+
+verbs_trans = [
+    "убить",
+    "забыть"
+]
 adjs = {
     "белый": ['balad'],
     "зелёный": ['madīnat'],
@@ -86,12 +91,6 @@ verb_forms = [
     if 'VERB' in form.tag and 'impr' not in form.tag
 ]
 verb_personal = random.choice(verb_forms)
-
-verb_forms_full = [
-    form.word for form in morph.parse(verb)[0].lexeme
-    if 'VERB' in form.tag
-]
-verb_personal_full = random.choice(verb_forms_full)
 
 determiner = random.choice(list(determiners.keys()))
 preposition = random.choice(list(prepositions.keys()))
@@ -176,10 +175,21 @@ def structure_VP():
 
           NP = f"{noun_acc}{dual_acc} {preposition} {adjective_NP2_return} {noun_loc}{dual_loc}"
 
+        while True:
+            verb = random.choice(list(verbs.keys()))
+            if verb in verbs_trans:
+                break
+
         return f"{verb} {NP}"
 
     elif structure_VP_podtype == 2:
-            return verb_personal_full
+        verb = random.choice(list(verbs.items()))[0]
+        verb_forms = [
+            form.word for form in morph.parse(verb)[0].lexeme
+            if 'VERB' in form.tag and 'impr' not in form.tag
+        ]
+        verb_personal = random.choice(verb_forms)
+        return verb_personal
 
     elif structure_VP_podtype == 3:
             structure_NP_podtype = random.choice([1, 2])
@@ -260,6 +270,17 @@ def structure_VP():
               adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
 
               NP = f"{noun_acc}{dual_acc} {preposition} {adjective_NP2_return} {noun_loc}{dual_loc}"
+
+            while True:
+                verb = random.choice(list(verbs.keys()))
+                if verb in verbs_trans:
+                    break
+            verb_forms = [
+                form.word for form in morph.parse(verb)[0].lexeme
+                if 'VERB' in form.tag and 'impr' not in form.tag
+            ]
+            verb_personal = random.choice(verb_forms)
+
             return f"{verb_personal} {NP}"
 
 
@@ -347,6 +368,15 @@ def structure_NP():
         return f"{adjective_NP3_1_return} {noun_nom}{dual_nom} {adjective_NP3_2_return} {noun_gen}{dual_gen}"
 
     elif structure_NP_podtype == 4:
+        while True:
+            verb = random.choice(list(verbs.keys()))
+            if verb in verbs_trans:
+                break
+        verb_forms = [
+            form.word for form in morph.parse(verb)[0].lexeme
+            if 'VERB' in form.tag and 'impr' not in form.tag
+        ]
+        verb_personal = random.choice(verb_forms)
         VP_NP4_num = random.choice([1, 2])
         if VP_NP4_num == 1:
             structure_NP_podtype = random.choice([1, 2])
@@ -445,7 +475,6 @@ def structure_NP():
 
         elif VP_NP4_num == 2:
             noun_gender_check = morph.parse(noun_nom)[0].tag.gender
-            
             verb_person_check = morph.parse(verb_personal)[0].tag.person
             verb_tense_check = morph.parse(verb_personal)[0].tag.tense
 
@@ -474,6 +503,15 @@ def structure_NP():
         return f"{noun_nom}{dual_nom}, {that_NP4} {VP_NP4}"
 
     elif structure_NP_podtype == 5:
+        while True:
+            verb = random.choice(list(verbs.keys()))
+            if verb in verbs_trans:
+                break
+        verb_forms = [
+            form.word for form in morph.parse(verb)[0].lexeme
+            if 'VERB' in form.tag and 'impr' not in form.tag
+        ]
+        verb_personal = random.choice(verb_forms)
         VP_NP5_num = random.choice([1, 2])
         if VP_NP5_num == 1:
             structure_NP_podtype = random.choice([1, 2])
@@ -558,9 +596,11 @@ def structure_NP():
                 NP = f"{noun_acc}{dual_acc} {preposition} {adjective_NP2_return} {noun_loc}{dual_loc}"
 
             noun_gender_check = morph.parse(noun_nom)[0].tag.gender
-            
+
+
             verb_person_check = morph.parse(verb_personal)[0].tag.person
             verb_tense_check = morph.parse(verb_personal)[0].tag.tense
+
 
             grammemes = set()
             if verb_person_check != '3per' and verb_tense_check != 'past':
@@ -575,7 +615,7 @@ def structure_NP():
             VP_NP5 = f"{inflected_verb} {noun_nom}{dual_nom}"
 
         elif VP_NP5_num == 2:
-            VP_NP5 = verb_personal_full
+            VP_NP5 = verb_personal
 
         that5_gender_check = morph.parse(noun_nom)[0].tag.gender
         that5_animacy_check = morph.parse(noun_nom)[0].tag.animacy
