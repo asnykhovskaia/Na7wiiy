@@ -1,5 +1,10 @@
 #морфология глагола (будет дополняться)
-def verb_gen(form, verb, vow, der, weak):
+def verb_gen(gram: list):
+    form = gram[0]
+    verb = gram[1]
+    vow = gram[2]
+    der = gram[3]
+    weak = gram[4]
     vows = ["a", "i", "u", ["ā", "ī", "ū"]]
     verb = verb[:-1]
     if form[0] == "perf":
@@ -191,7 +196,11 @@ def declension(word: str, condition: str, form: str, num: str):
         return word
 
 
-def pl_declension(word: str, condition: str, form: str, d: dict):
+def declension(noun: list):
+    word = noun[0]
+    condition = noun[1]
+    form = noun[2]
+    num = noun[3]
     if d[word] == 1:
         if word[-2:] == "at":
             word = word[:-2] + "āt"
