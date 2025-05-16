@@ -4,17 +4,260 @@ import pymorphy3
 morph = pymorphy3.MorphAnalyzer()
 
 nouns = {
-    "страна": ['balad'],
-    "город": ['madīnat'],
-    "дом": ['bayt'],
-    "улица": ['šāriʿ'],
-    "школа": ['madrasat'],
-    "университет": ['ǧāmiʿat'],
-    "мама": ['bayt'],
-    "папа": ['šāriʿ'],
-    "Миша": ['madrasat'],
-    "Филипп": ['ǧāmiʿat']
+    "страна": ['balad', 'bilād'],
+    "город": ['madīnat', 'mudun'],
+    "дом": ['bayt', 'buyūt'],
+    "улица": ['šāriʿ', 'šawāriʿu'],
+    "школа": ['madrasat', 'madārisu'],
+    "университет": ['ǧāmiʿat', 1],
+    "книга": ['kitāb', 'kutub'],
+    "ручка": ['qalam', 'ʾaqlām'],
+    "стол": ['maktab', 'makātibu'],
+    "стул": ['kursīy', 'karāsīyu'],
+    "комната": ['ġurfat', 1],
+    "дверь": ['bāb', 'ʾabwāb'],
+    "окно": ['nāfiḏat', 1],
+    "час": ['sāʿat', 1],
+    "день": ['yawm', 'ʾayyām'],
+    "ночь": ['layl', 0],
+    "неделя": ['ʾusbūʿ', 'ʾasābīʿ'],
+    "месяц": ['šahr', 'ʾašhur'],
+    "год": ['sanat', 'sanawāt'],
+    "имя": ['ʾism', 'ʾasmāʾ'],
+    "утро": ['ṣabāḥ', 0],
+    "адрес": ['ʿunwān', 'ʿanāwīn'],
+    "номер": ['raqm', 'ʾarqām'],
+    "письмо": ['risālat', 'rasāʾilu'],
+    "язык": ['luġat', 1],
+    "работа": ['ʿamal', 'ʾaʿmāl'],
+    "друг": ['ṣadīq', 'ʾaṣdiqāʾu'],
+    "семья": ['ʾāʿilat', 1],
+    "отец": ['ʾab', 'ʾābāʾ'],
+    "мать": ['ʾumm', 'ʾummāhāt'],
+    "брат": ['ʾaḫ', 'ʾiḫwān'],
+    "сестра": ['ʾuḫt', 'ʾaḫawāt'],
+    "муж": ['zawǧ', 'ʾazwāǧ'],
+    "жена": ['zawǧat', 1],
+    "ребенок": ['ṭifl', 'ʾaṭfāl'],
+    "человек": ['ʾinsān', 'nās'],
+    "мир": ['salām', 0],
+    "вопрос": ['suʾāl', 'ʾasʾilat'],
+    "ответ": ['ǧawāb', 'ʾaǧwibat'],
+    "словарь": ['qāmūs', 'qawāmisu'],
+    "предложение": ['ǧumlat', 1],
+    "класс": ['ṣaff', 'ʾaṣuff'],
+    "доска": ['sabūrat', 1],
+    "карта": ['ḫarīṭat', 1],
+    "фотография": ['ṣūrat', 'ṣuwar'],
+    "новость": ['ḫabar', 'ʾaḫbār'],
+    "история": ['qiṣṣat', 1],
+    "религия": ['dīn', 'ʾadyān'],
+    "план": ['ḫiṭṭat', 1],
+    "спорт": ['riyāḍat', 1],
+    "искусство": ['fann', 'funūn'],
+    "культура": ['ṯaqāfat', 1],
+    "еда": ['ṭaʿām', 0],
+    "вода": ['māʾ', 0],
+    "рынок": ['sūq', 'ʾaswāq'],
+    "деньги": ['māl', 0],
+    "банк": ['bank', 'bunūk'],
+    "почта": ['barīd', 0],
+    "аэропорт": ['maṭār', 1],
+    "автобус": ['ḥāfilat', 1],
+    "машина": ['sayyārat', 1],
+    "поезд": ['qiṭār', 'qiṭārāt'],
+    "самолет": ['ṭāʾirat', 1],
+    "корабль": ['safīnat', 'sufun'],
+    "путешествие": ['safar', 0],
+    "время": ['waqt', 'ʾawqāt'],
+    "место": ['makān', 'ʾamākinu'],
+    "цвет": ['lawn', 'ʾalwān'],
+    "размер": ['ḥaǧm', 'ʾaḥǧām'],
+    "форма": ['šakl', 'ʾaškal'],
+    "материал": ['māddat', 1],
+    "жара": ['ḥarr', 0],
+    "погода": ['ǧaww', 0],
+    "ветер": ['rīḥ', 'riyāḥ'],
+    "дождь": ['maṭar', 'ʾamṭār'],
+    "снег": ['ṯalǧ', 0],
+    "гора": ['ǧabal', 'ǧibāl'],
+    "река": ['nahr', 'ʾanhār'],
+    "море": ['baḥr', 'biḥār'],
+    "лес": ['ġābat', 1],
+    "животное": ['ḥaywān', 'ḥaywānāt'],
+    "птица": ['ṭāʾir', 'ṭuyūr'],
+    "растение": ['nabāt', 'nabāt'],
+    "цветок": ['zahrat', 1],
+    "солнце": ['šams', 0],
+    "луна": ['qamar',  0],
+    "звезда": ['naǧm', 'nuǧūm'],
+    "небо": ['samāʾ', 0],
+    "земля": ['ʾarḍ', 0],
+    "воздух": ['hawāʾ',  0],
+    "мир": ['salām',  0],
+    "свобода": ['ḥurriyyat', 1],
+    "право": ['ḥaqq', 'ḥuqūq'],
+    "дело": ['ʾamr', 'ʾumūr'],
+    "надежда": ['ʾamal',  0],
+    "страх": ['ḫawf',  0],
+    "гнев": ['ġaḍab',  0],
+    "радость": ['faraḥ', 0],
+    "ум": ['ʿaql',  0],
+    "сердце": ['qalb', 'qulūb'],
+    "душа": ['nafs', 'ʾanfus'],
+    "тело": ['ǧism', 'ʾaǧsām'],
+    "голова": ['raʾs', 'ruʾūs'],
+    "лицо": ['waǧh', 'wuǧūh'],
+    "глаз": ['ʿayn', 'ʾaʿyun'],
+    "ухо": ['ʾuḏun', 'ʾāḏān'],
+    "нос": ['ʾanf', 'ʾunūf'],
+    "рука": ['yad', 0],
+    "нога": ['riǧl', 'ʾarǧul'],
+    "доктор": ['ṭabīb', 'ʾaṭibbāʾu'],
+    "инженер": ['muhandisu', 1],
+    "учитель": ['mudarrisu', 1],
+    "студент": ['ṭālib', 'ṭullāb'],
+    "полицейский": ['šurṭīy', 1],
+    "солдат": ['ǧundīy', 1]
 }
+
+nouns_anim_m= [
+    "друг",
+    "отец",
+    "брат",
+    "муж",
+    "человек",
+    "доктор",
+    "инженер",
+    "учитель",
+    "студент",
+    "полицейский",
+    "солдат"
+]
+
+nouns_anim_f = [
+    "мать",
+    "сестра",
+    "жена"
+]
+
+nouns_unanim_m = [
+    "город",
+    "дом",
+    "университет",
+    "книга",
+    "ручка",
+    "стол",
+    "стул",
+    "час",
+    "день",
+    "номер",
+    "язык",
+    "мир",
+    "вопрос",
+    "словарь",
+    "класс",
+    "план",
+    "спорт",
+    "искусство",
+    "рынок",
+    "банк",
+    "аэропорт",
+    "автобус",
+    "поезд",
+    "самолет",
+    "корабль",
+    "ветер",
+    "дождь",
+    "снег",
+    "гора",
+    "река",
+    "море",
+    "лес",
+    "гнев",
+    "ум",
+    "нос",
+    "самолет"
+]
+
+nouns_unanim_f = [
+    "страна",
+    "школа",
+    "комната",
+    "дверь",
+    "окно",
+    "ночь",
+    "неделя",
+    "месяц",
+    "год",
+    "имя",
+    "утро",
+    "адрес",
+    "письмо",
+    "работа",
+    "семья",
+    "религия",
+    "доска",
+    "карта",
+    "фотография",
+    "новость",
+    "история",
+    "культура",
+    "еда",
+    "почта",
+    "машина",
+    "путешествие",
+    "время",
+    "место",
+    "форма",
+    "вода",
+    "жара",
+    "погода",
+    "земля",
+    "война",
+    "свобода",
+    "право",
+    "дело",
+    "надежда",
+    "страх",
+    "радость",
+    "душа",
+    "голова",
+    "рука",
+    "нога",
+    "луна",
+    "звезда",
+    "небо",
+    "улица"
+]
+
+nouns_locativable = [
+    "страна",
+    "город",
+    "дом",
+    "улица",
+    "школа",
+    "университет",
+    "комната",
+    "класс",
+    "рынок",
+    "банк",
+    "почта",
+    "аэропорт",
+    "автобус",
+    "машина",
+    "поезд",
+    "самолет",
+    "корабль",
+    "гора",
+    "река",
+    "море",
+    "лес",
+    "луна",
+    "небо",
+    "земля",
+    "воздух"
+]
 verbs = {
     "убить": ['balad'],
     "забыть": ['madīnat'],
@@ -45,7 +288,10 @@ prepositions = {
     "на": ['madīnat'],
 }
 
-noun_nom_syr = random.choice(list(nouns.items()))[0]
+while True:
+    noun_nom_syr = random.choice(list(nouns.items()))[0]
+    if noun_nom_syr in nouns_anim_f or noun_nom_syr in nouns_anim_m:
+        break
 noun_nom_number_choice = random.choice(['sing', 'plur', 'plur'])
 noun_nom = morph.parse(noun_nom_syr)[0].inflect({noun_nom_number_choice}).word
 dual_nom_yes = ""
@@ -55,7 +301,11 @@ if noun_nom_number_choice == 'plur':
         dual_nom_yes = "(дв.)"
 dual_nom = f" {dual_nom_yes}" if dual_nom_yes else ""
 
-noun_acc_syr = random.choice(list(nouns.items()))[0]
+while True:
+    noun_acc_syr = random.choice(list(nouns.items()))[0]
+    if noun_acc_syr in nouns_unanim_m or noun_acc_syr in nouns_unanim_f:
+        break
+
 noun_acc_number_choice = random.choice(['sing', 'plur', 'plur'])
 noun_acc = morph.parse(noun_acc_syr)[0].inflect({'accs', noun_acc_number_choice}).word
 dual_acc_yes = ""
@@ -65,7 +315,10 @@ if noun_acc_number_choice == 'plur':
         dual_acc_yes = "(дв.)"
 dual_acc = f" {dual_acc_yes}" if dual_acc_yes else ""
 
-noun_gen_syr = random.choice(list(nouns.items()))[0]
+while True:
+    noun_gen_syr = random.choice(list(nouns.items()))[0]
+    if noun_gen_syr in nouns_anim_f or noun_gen_syr in nouns_anim_m:
+        break
 noun_gen_number_choice = random.choice(['sing', 'plur', 'plur'])
 noun_gen = morph.parse(noun_gen_syr)[0].inflect({'gent', noun_gen_number_choice}).word
 dual_gen_yes = ""
@@ -75,7 +328,10 @@ if noun_gen_number_choice == 'plur':
         dual_gen_yes = "(дв.)"
 dual_gen = f" {dual_gen_yes}" if dual_gen_yes else ""
 
-noun_loc_syr = random.choice(list(nouns.items()))[0]
+while True:
+    noun_loc_syr = random.choice(list(nouns.items()))[0]
+    if noun_loc_syr in nouns_locativable:
+        break
 noun_loc_number_choice = random.choice(['sing', 'plur', 'plur'])
 noun_loc = morph.parse(noun_loc_syr)[0].inflect({'loct', noun_loc_number_choice}).word
 dual_loc_yes = ""
