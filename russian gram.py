@@ -271,6 +271,10 @@ verbs_trans = [
     "убить",
     "забыть"
 ]
+verbs_intrans = [
+    "подумать",
+    "повеситься"
+]
 adjs = {
     "белый": ['balad'],
     "зелёный": ['madīnat'],
@@ -439,7 +443,10 @@ def structure_VP():
         return f"{verb} {NP}"
 
     elif structure_VP_podtype == 2:
-        verb = random.choice(list(verbs.items()))[0]
+        while True:
+            verb = random.choice(list(verbs.keys()))
+            if verb in verbs_intrans:
+                break
         verb_forms = [
             form.word for form in morph.parse(verb)[0].lexeme
             if 'VERB' in form.tag and 'impr' not in form.tag and 'past' not in form.tag
@@ -624,6 +631,7 @@ def structure_NP():
         return f"{adjective_NP3_1_return} {noun_nom}{dual_nom} {adjective_NP3_2_return} {noun_gen}{dual_gen}"
 
     elif structure_NP_podtype == 4:
+        VP_NP4_num = random.choice([1, 2])
         while True:
             verb = random.choice(list(verbs.keys()))
             if verb in verbs_trans:
@@ -633,7 +641,6 @@ def structure_NP():
             if 'VERB' in form.tag and 'impr' not in form.tag
         ]
         verb_personal = random.choice(verb_forms)
-        VP_NP4_num = random.choice([1, 2])
         if VP_NP4_num == 1:
             structure_NP_podtype = random.choice([1, 2])
             if structure_NP_podtype == 1:
@@ -723,13 +730,22 @@ def structure_NP():
             if noun_nom_number_choice:
                 grammemes.add(noun_nom_number_choice)
             else:
-                grammemes.add('sing')
+                grammemes.add(',sing')
             if noun_nom_number_choice == 'sing' and verb_tense_check == 'past' and noun_gender_check:
                 grammemes.add(noun_gender_check)
             inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
             VP_NP4 = f"{inflected_verb} {NP}"
 
         elif VP_NP4_num == 2:
+            while True:
+                verb = random.choice(list(verbs.keys()))
+                if verb in verbs_intrans:
+                    break
+            verb_forms = [
+                form.word for form in morph.parse(verb)[0].lexeme
+                if 'VERB' in form.tag and 'impr' not in form.tag
+            ]
+            verb_personal = random.choice(verb_forms)
             noun_gender_check = morph.parse(noun_nom)[0].tag.gender
             verb_person_check = morph.parse(verb_personal)[0].tag.person
             verb_tense_check = morph.parse(verb_personal)[0].tag.tense
@@ -740,7 +756,7 @@ def structure_NP():
             if noun_nom_number_choice:
                 grammemes.add(noun_nom_number_choice)
             else:
-                grammemes.add('sing')
+                grammemes.add(',sing')
             if noun_nom_number_choice == 'sing' and verb_tense_check == 'past' and noun_gender_check:
                 grammemes.add(noun_gender_check)
             inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
