@@ -1383,9 +1383,9 @@ def structure_NP():
                 )
             if morph.parse(inflected_verb)[0].tag.tense == "futr":
                 GRAM["V2"][1].append("sawfa")
-            if nouns[noun_nom_syr_sub][2] == "f":
+            if nouns[morph.parse(noun_nom_syr_sub)[0].normal_form][2] == "f":
                 GRAM["V2"][1][1] += "f"
-            elif nouns[noun_nom_syr_sub][2] == "m":
+            elif nouns[morph.parse(noun_nom_syr_sub)[0].normal_form][2] == "m":
                 GRAM["V2"][1][1] += "m"
             if morph.parse(S_NP5)[0].tag.number == "sing":
                 GRAM["V2"][1][1] += "sg"
@@ -1427,7 +1427,6 @@ print(' '.join(res.split()))
 print(needed)
 GRAM_2 = {key: value for key, value in GRAM.items() if key in needed}
 print(GRAM_2)
-
 
 def rus_to_arab():
     sent = []
