@@ -191,7 +191,10 @@ def verb_gen(gram: list):
         verb += clitics[gram[-2]][length+harmony]
     return verb
 
+
+
 #склонение
+
 
 def declension(noun: list):
     global nouns
@@ -202,12 +205,14 @@ def declension(noun: list):
     ends = {"nom": "u", "gen": "i", "acc": "a"}
     assamsu = {"t", "d", "r", "z", "s", "n", "š", "ṯ", "ḏ", "ṣ", "ḍ", "ṭ", "ẓ"}
     if num == "pl":
-        result = pl_declension(word, condition, form, d)
+        result = pl_declension(word, condition, form)
         if condition == "indef":
             return result
         else:
             word = result
     elif num == "du":
+        if nouns[word][0][-1] == "u":
+            word = nouns[word][0][:-1]
         if form == "nom":
             word = nouns[word][0] + "ā"
         else:
@@ -217,6 +222,18 @@ def declension(noun: list):
         else:
             word = word + "ni"
         if condition == "indef":
+            return word
+    elif nouns[word][0][-1] == "u":
+        word = nouns[word][0][:-1]
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        if condition != "def":
             return word
     else:
         word = nouns[word][0] + ends[form]
@@ -259,6 +276,133 @@ def pl_declension(word: str, condition: str, form: str):
         word = word
     elif type(word_pl) is str:
         word = word_pl
+    if word[-1] == "u":
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        return word
+    if form == "nom":
+        word = word + "u"
+    elif form == "gen":
+        word = word + "i"
+    elif form == "acc":
+        word = word + "a"
+    if condition == "indef":
+        word = word + "n"
+    return word
+
+
+#склонение прилагательных
+
+def adj_declension(adj: list):
+    global adjs
+    word = adj[0]
+    condition = adj[1]
+    form = adj[2]
+    num = adj[3]
+    gender = adj[4]
+    ends = {"nom": "u", "gen": "i", "acc": "a"}
+    assamsu = {"t", "d", "r", "z", "s", "n", "š", "ṯ", "ḏ", "ṣ", "ḍ", "ṭ", "ẓ"}
+    if gender == "fem":
+        word = adjs[word][0] + "at"
+        if num == "pl":
+            word = word + "_"
+    if num == "pl":
+        result = adj_pl_declension(word, condition, form)
+        if condition == "indef":
+            return result
+        else:
+            word = result
+    elif num == "du":
+        word = adjs[word][0]
+        if word[-1] == "u":
+            word = word[:-1]
+        if form == "nom":
+            word = word + "ā"
+        else:
+            word = word + "ay"
+        if condition == "constr":
+            return word
+        else:
+            word = word + "ni"
+        if condition == "indef":
+            return word
+    elif adjs[word][0] == "u":
+        word = adjs[word][0]
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        if condition != "def":
+            return word
+    else:
+        word = adjs[word][0] + ends[form]
+    if condition == "indef":
+        return word + "n"
+    elif condition == "def":
+        if word[-1] == "ū" or word[-1] == "ī":
+            word = word + "na"
+        if word[0] in assamsu:
+            return "a" + word[0] + "-" + word
+        else:
+            return "al-" + word
+    elif condition == "constr":
+        return word
+
+def adj_pl_declension(word, condition, form):
+    global adjs
+    word_pl = adjs[word][1]
+    word = adjs[word][0]
+    if word[-1] == "_":
+        word = word[:-2] + "āt"
+        if form == "nom":
+            word = word + "u"
+        else:
+            word = word + "i"
+        if condition == "indef":
+            word = word + "n"
+        return word
+    if word_pl == 1:
+        if word[-2:] == "at":
+            word = word[:-2] + "āt"
+            if form == "nom":
+                word = word + "u"
+            else:
+                word = word + "i"
+            if condition == "indef":
+                word = word + "n"
+            return word
+        else:
+            if form == "nom":
+                word = word + "ū"
+            else:
+                word = word + "ī"
+            if condition == "indef":
+                word = word + "na"
+            return word
+    elif word_pl == 0:
+        word = word
+    elif type(word_pl) is str:
+        word = word_pl
+    if word[-1] == "u":
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        return word
     if form == "nom":
         word = word + "u"
     elif form == "gen":
