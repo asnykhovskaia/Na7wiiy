@@ -1,11 +1,22 @@
-#морфология глагола (будет дополняться)
+#морфология глагола
 def verb_gen(gram: list):
     global verbs
+    global GRAM
+    clitics = {
+        "allatī": ["hā", "hā", "hā", "hā"],
+        "allaḏī": ['hu', 'hi', 'hū', 'hī'],
+        "ʾallaḏīna": ['hum', 'him', 'hum', 'him'],
+        "ʾallātī": ['hunna', 'hinna', 'hunna', 'hinna'],
+        "allaḏayni": ['humā', 'himā', 'humā', 'himā'],
+        "allatayni": ['humā', 'himā', 'humā', 'himā']
+    }
     form = gram[1]
     verb = verbs[gram[0]][0]
     vow = verbs[gram[0]][1]
     der = verbs[gram[0]][2]
     weak = verbs[gram[0]][3]
+    harmony = 0
+    length = 0
     vows = ["a", "i", "u", ["ā", "ī", "ū"]]
     verb = verb[:-1]
     if form[0] == "perf":
@@ -167,9 +178,18 @@ def verb_gen(gram: list):
                 verb = verb.replace("0", "y")
             elif vow == "u":
                 verb = verb.replace("0", "w")
+    if "sawfa" in form:
+        verb = "sawfa" + " " + verb
 
+    if verb[-1] not in vows:
+        length = 2
+    if verb[-1] == "i" or verb[-1] == "ī":
+        harmony = 1
+    if len(gram) >= 3:
+        verb = gram[2] + " " + verb
+    if len(gram) > 3:
+        verb += clitics[gram[-2]][length+harmony]
     return verb
-
 
 #склонение
 
