@@ -1,1 +1,2650 @@
+import pymorphy3
+import random
+import telebot
+from telebot import types
+import config
+
+# словарь
+GRAM = {}
+needed = []
+needed_VP = []
+needed_NP = []
+results = ""
+
+prepositions = {
+    "в": ['loct', 'fī'],
+    "на": ['loct','ʿalā'],
+    "из": ['gent','min'],
+    "к": ['datv', 'ʾilā'],
+    "с": ['ablt', 'maʿa'],
+    "перед": ['ablt', 'ʾamāma'],
+    "за": ['ablt', 'ḫalfa'],
+    "над": ['ablt', 'fawqa'],
+    "под": ['ablt', 'taḥta'],
+    "рядом с": ['ablt', 'biǧānib'],
+    "у": ['gent', 'ʿinda']
+}
+
+nouns = {
+    'страна': ['balad', 'bilād', 'f'],
+    'город': ['madīnat', 'mudun', 'm'],
+    'дом': ['bayt', 'buyūt', 'm'],
+    'улица': ['šāriʿ', 'šawāriʿu', 'f'],
+    'школа': ['madrasat', 'madārisu', 'f'],
+    'университет': ['ǧāmiʿat', 1, 'm'],
+    'книга': ['kitāb', 'kutub', 'm'],
+    'ручка': ['qalam', 'ʾaqlām', 'm'],
+    'стол': ['maktab', 'makātibu', 'm'],
+    'стул': ['kursīy', 'karāsīyu', 'm'],
+    'комната': ['ġurfat', 1, 'f'],
+    'дверь': ['bāb', 'ʾabwāb', 'f'],
+    'окно': ['nāfiḏat', 1, 'f'],
+    'час': ['sāʿat', 1, 'm'],
+    'день': ['yawm', 'ʾayyām', 'm'],
+    'ночь': ['layl', 0, 'f'],
+    'неделя': ['ʾusbūʿ', 'ʾasābīʿ', 'f'],
+    'месяц': ['šahr', 'ʾašhur', 'f'],
+    'год': ['sanat', 'sanawāt', 'f'],
+    'имя': ['ism', 'ʾasmāʾ', 'f'],
+    'утро': ['ṣabāḥ', 0, 'f'],
+    'адрес': ['ʿunwān', 'ʿanāwīn', 'f'],
+    'номер': ['raqm', 'ʾarqām', 'm'],
+    'письмо': ['risālat', 'rasāʾilu', 'f'],
+    'язык': ['luġat', 1, 'm'],
+    'друг': ['ṣadīq', 'ʾaṣdiqāʾu', 'm'],
+    'семья': ['ʾāʿilat', 1, 'f'],
+    'брат': ['ʾaḫ', 'ʾiḫwān', 'm'],
+    'сестра': ['ʾuḫt', 'ʾaḫawāt', 'f'],
+    'муж': ['zawǧ', 'ʾazwāǧ', 'm'],
+    'вопрос': ['suʾāl', 'ʾasʾilat', 'm'],
+    'ответ': ['ǧawāb', 'ʾaǧwibat', 'm'],
+    'словарь': ['qāmūs', 'qawāmisu', 'm'],
+    'предложение': ['ǧumlat', 1, 'm'],
+    'класс': ['ṣaff', 'ʾaṣuff', 'm'],
+    'доска': ['sabūrat', 1, 'f'],
+    'карта': ['ḫarīṭat', 1, 'f'],
+    'фотография': ['ṣūrat', 'ṣuwar', 'f'],
+    'новость': ['ḫabar', 'ʾaḫbār', 'f'],
+    'история': ['qiṣṣat', 1, 'f'],
+    'религия': ['dīn', 'ʾadyān', 'f'],
+    'план': ['ḫiṭṭat', 1, 'm'],
+    'рынок': ['sūq', 'ʾaswāq', 'm'],
+    'банк': ['bank', 'bunūk', 'm'],
+    'почта': ['barīd', 0, 'f'],
+    'аэропорт': ['maṭār', 1, 'm'],
+    'автобус': ['ḥāfilat', 1, 'm'],
+    'машина': ['sayyārat', 1, 'f'],
+    'поезд': ['qiṭār', 'qiṭārāt', 'm'],
+    'самолёт': ['ṭāʾirat', 1, 'm'],
+    'корабль': ['safīnat', 'sufun', 'm'],
+    'путешествие': ['safar', 0, 'f'],
+    'время': ['waqt', 'ʾawqāt', 'f'],
+    'место': ['makān', 'ʾamākinu', 'f'],
+    'цвет': ['lawn', 'ʾalwān', 'm'],
+    'размер': ['ḥaǧm', 'ʾaḥǧām', 'm'],
+    'форма': ['šakl', 'ʾaškal', 'f'],
+    'материал': ['māddat', 1, 'm'],
+    'ветер': ['rīḥ', 'riyāḥ', 'm'],
+    'дождь': ['maṭar', 'ʾamṭār', 'm'],
+    'гора': ['ǧabal', 'ǧibāl', 'm'],
+    'река': ['nahr', 'ʾanhār', 'm'],
+    'море': ['baḥr', 'biḥār', 'm'],
+    'лес': ['ġābat', 1, 'm'],
+    'животное': ['ḥaywān', 'ḥaywānāt', 'm'],
+    'птица': ['ṭāʾir', 'ṭuyūr', 'm'],
+    'растение': ['nabāt', 'nabāt', 'm'],
+    'цветок': ['zahrat', 1, 'm'],
+    'звезда': ['naǧm', 'nuǧūm', 'f'],
+    'дело': ['ʾamr', 'ʾumūr', 'f'],
+    'надежда': ['ʾamal', 0, 'f'],
+    'страх': ['ḫawf', 0, 'f'],
+    'радость': ['faraḥ', 0, 'f'],
+    'ум': ['ʿaql', 0, 'm'],
+    'сердце': ['qalb', 'qulūb', 'm'],
+    'душа': ['nafs', 'ʾanfus', 'f'],
+    'тело': ['ǧism', 'ʾaǧsām', 'm'],
+    'голова': ['raʾs', 'ruʾūs', 'f'],
+    'лицо': ['waǧh', 'wuǧūh', 'm'],
+    'глаз': ['ʿayn', 'ʾaʿyun', 'm'],
+    'ухо': ['ʾuḏun', 'ʾāḏān', 'm'],
+    'нос': ['ʾanf', 'ʾunūf', 'm'],
+    'рука': ['yad', 0, 'f'],
+    'нога': ['riǧl', 'ʾarǧul', 'f'],
+    'студент': ['ṭālib', 'ṭullāb', 'm'],
+    'полицейский': ['šurṭīy', 1, 'm'],
+    "солдат": ['ǧundīy', 1, 'm'],
+    'подруга': ['ṣadīqat', 1, 'f'],
+    'преподавательница': ['mudarrisat', 1, 'f'],
+    'бухгалтерша': ['muḥāsibat', 1, 'f'],
+    'студентка': ['ṭālibat', 1, 'f'],
+    'дочь': ['ʾibnat','banāt', 'f'],
+    'внучка': ['ḥafīdat', 1, 'f'],
+}
+
+adjs = {
+    "хороший": ['ǧayyid', 1],
+    "большой": ['kabīr', 'kibār'],
+    "маленький": ['ṣaġīr', 'ṣiġār'],
+    "новый": ['ǧadīd', 'ǧudud'],
+    "старый": ['qadīm', 'qudamāʾu'],
+    "красивый": ['ǧamīl', 1],
+    "легкий": ['sahl', 1],
+    "трудный": ['ṣaʿb', 'ṣiʿāb'],
+    "дешевый": ['raḫīṣ', 'riḫāṣ'],
+    "открытый": ['maftūḥ', 1],
+    "закрытый": ['muġlaq', 1],
+    "далекий": ['baʿīd', 'biʿād'],
+    "близкий": ['qarīb', 'qirāb'],
+    "правый": ['yaminīy', 1],
+    "левый": ['yasārīy', 1],
+    "высокий": ['ṭawīl', 'ṭiwāl'],
+    "низкий": ['qaṣīr', 'qisār'],
+    "длинный": ['ṭawīl', 'ṭiwāl'],
+    "короткий": ['qaṣīr', 'qisār'],
+    "счастливый": ['saʿīd', 'suʿadāʾu'],
+    "грустный": ['ḥazīn', 'ḥizān'],
+    "усталый": ['taʿib', 'taʿbān'],
+    "больной": ['marīḍ', 0],
+    "здоровый": ['ṣaḥīḥ', 'ṣiḥāḥ'],
+    "занятый": ['mašġūl', 0],
+    "свободный": ['fāriġ', 'furrāġ'],
+    "холодный": ['bārid', 1],
+    "горячий": ['ḥārr', 1],
+    "бедный": ['faqīr', 'fuqarāʾu'],
+    "сильный": ['qawīy', 'ʾaqwiyāʾu'],
+    "слабый": ['ḍaʿīf', 'ḍuʿafāʾu'],
+    "глубокий": ['ʿamīq', 'ʿimāq'],
+    "широкий": ['wāsiʿ', 'wisāʿ'],
+    "узкий": ['ḍayyiq', 1],
+    "полный": ['mumtaliʾ', 1],
+    "пустой": ['fāriġ', 1],
+    "чистый": ['naẓīf', 1],
+    "грязный": ['wasih', 1],
+    "важный": ['hāmm', 1],
+    "общий": ['ʿāmm', 1],
+    "личный": ['šaḫṣīy', 1],
+    "главный": ['ʾasāsīy', 1],
+    "верный": ['ṣādīq', 1],
+    "возможный": ['mumkin', 1]
+}
+
+determiners = {
+    "этот": ['hāḏā', 'hāḏihī', 'hāḏāni', 'hāḏayni', 'hātāni', 'hātayni', 'hāʾulāʾi', 'hāʾulāʾi'],
+    "тот": ['ḏālika', 'tilka', 'ḏānika', 'ḏaynika', 'tānika', 'tilka', 'ʾulāʾika', 'ʾulāʾika'],
+}
+
+verbs = {
+    "думать": ['fakkara', 'i', 2, 0],
+    "говорить": ['takallama', 'a', 5, 0],
+    "читать": ['qaraʾa', 'a', 1, 0],
+    "знать": ['ʿarafa', 'i', 1, 0],
+    "понимать": ['fahima', 'a', 1, 0],
+    "работать": ['ʿamila', 'a', 1, 0],
+    "слушать": ['istamaʿa', 'i', 10, 0],
+    "открывать": ['fataḥa', 'a', 1, 0],
+    "закрывать": ['ʾaġlaqa', 'i', 4, 0],
+    "изучать": ['darasa', 'u', 1, 0],
+    "пить": ['šariba', 'a', 1, 0],
+    "запоминать": ['ḥafiẓa', 'a', 1, 0],
+    "искать": ['ṭalaba', 'u', 1, 0],
+    "хвалить": ['ḥamida', 'a', 1, 0],
+    "слышать": ['samiʿa', 'a', 1, 0],
+    "любить": ['ʾaḥabba', 'i', 4, 4],
+    "видеть": ['raʾa0a', 'a', 1, 3],
+    "выбрать": ['iḫta0ara', 'i', 8, 2],
+    "находить": ['0aǧada', 'i', 1, 1],
+    "заканчивать": ['intaha0a', 'i', 8, 1],
+    "спрашивать": ['saʾala', 'a', 1, 0],
+    "использовать": ['istaḫdama', 'i', 10, 0],
+    "получать": ['ḥaṣala ʿalā', 'a', 1, 0],
+    "добавлять": ['ʾaḍ0afa', 'i', 4, 1],
+    "смотреть": ['naẓara', 'a', 1, 0],
+    "вести": ['qa0ada', 'u', 1, 1],
+    "покупать": ['ištara0a', 'i', 8, 1],
+    "продавать": ['ba0aʿa', 'i', 1, 1],
+    "помогать": ['sāʿada', 'i', 3, 0],
+    "танцевать": ['raqaṣa', 'u', 1, 0],
+    "петь": ['ranima', 'a', 1, 0],
+    "учить": ['ʿallama', 'i', 2, 0],  
+    "учиться": ['taʿallama', 'a', 5, 0],
+    "переезжать": ['intaqala', 'i', 8, 0],
+    "путешествовать": ['sāfara', 'i', 3, 0],
+    "вспоминать": ['taḏakkara', 'a', 5, 0],
+    "брать": ['tanāwala', 'a', 6, 0],
+    "приглашать": ['istadʿa0a', 'i', 10, 1],
+    "гулять": ['tanazzaha', 'a', 5, 0],
+    "навещать": ['ʿa0ada', 'u', 1, 1],
+    "отвечать": ['istaǧ0aba', 'i', 10, 1],
+    "прощать": ['tasāmaha', 'a', 6, 0],
+    "уважать": ['iḥtarama', 'i', 8, 0],
+    "меняться": ['tabaddala', 'a', 5, 0],
+    "ремонтировать": ['ʾaṣlaḥa', 'i', 4, 0],
+    "чистить": ['naẓẓafa', 'i', 2, 0],
+    "готовить": ['ṭabaḫa', 'a', 1, 0],
+    "терять": ['ʾaḍ0aʾa', 'i', 4, 1],
+    "трудиться": ['taʾammala', 'a', 5, 0],
+    "исследовать": ['istakšafa', 'i', 10, 0],
+    "преуспевать": ['tawaffaqa', 'a', 5, 0]
+}
+Prep = [
+    "в",
+    "на",
+    "из",
+    "к",
+    "с",
+    "для",
+    "перед",
+    "за",
+    "над",
+    "под",
+    "между",
+    "рядом с",
+    "у",
+    "вокруг"
+]
+
+Adj = [
+    "хороший",
+    "плохой",
+    "большой",
+    "маленький",
+    "новый",
+    "старый",
+    "красивый",
+    "легкий",
+    "трудный",
+    "дешевый",
+    "открытый",
+    "закрытый",
+    "далекий",
+    "близкий",
+    "правый",
+    "левый",
+    "высокий",
+    "низкий",
+    "длинный",
+    "короткий",
+    "счастливый",
+    "грустный",
+    "усталый",
+    "больной",
+    "здоровый",
+    "занятый",
+    "свободный",
+    "холодный",
+    "горячий",
+    "бедный",
+    "сильный",
+    "слабый",
+    "широкий",
+    "узкий",
+    "полный",
+    "пустой",
+    "чистый",
+    "грязный",
+    "важный",
+    "общий",
+    "главный",
+    "верный",
+]
+
+nouns_anim_m= [
+    "друг",
+    "отец",
+    "брат",
+    "муж",
+    "человек",
+    "доктор",
+    "инженер",
+    "учитель",
+    "студент",
+    "полицейский",
+    "солдат"
+]
+
+nouns_anim_f = [
+    "мать",
+    "сестра",
+    "жена"
+    'подруга',
+    'преподавательница',
+    'бухгалтерша',
+    'студентка',
+    'дочь',
+    'внучка'
+]
+
+nouns_unanim_m = [
+    "город",
+    "дом",
+    "университет",
+    "книга",
+    "ручка",
+    "стол",
+    "стул",
+    "час",
+    "день",
+    "номер",
+    "язык",
+    "мир",
+    "вопрос",
+    "словарь",
+    "класс",
+    "план",
+    "спорт",
+    "искусство",
+    "рынок",
+    "банк",
+    "аэропорт",
+    "автобус",
+    "поезд",
+    "самолет",
+    "корабль",
+    "ветер",
+    "дождь",
+    "снег",
+    "гора",
+    "река",
+    "море",
+    "лес",
+    "гнев",
+    "ум",
+    "нос",
+    "самолет"
+]
+
+nouns_unanim_f = [
+    "страна",
+    "школа",
+    "комната",
+    "дверь",
+    "окно",
+    "ночь",
+    "неделя",
+    "месяц",
+    "год",
+    "имя",
+    "утро",
+    "адрес",
+    "письмо",
+    "работа",
+    "семья",
+    "религия",
+    "доска",
+    "карта",
+    "фотография",
+    "новость",
+    "история",
+    "культура",
+    "еда",
+    "почта",
+    "машина",
+    "путешествие",
+    "время",
+    "место",
+    "форма",
+    "вода",
+    "жара",
+    "погода",
+    "земля",
+    "война",
+    "свобода",
+    "право",
+    "дело",
+    "надежда",
+    "страх",
+    "радость",
+    "душа",
+    "голова",
+    "рука",
+    "нога",
+    "луна",
+    "звезда",
+    "небо",
+    "улица"
+]
+
+nouns_locativable = [
+    "страна",
+    "город",
+    "дом",
+    "улица",
+    "школа",
+    "университет",
+    "комната",
+    "класс",
+    "рынок",
+    "банк",
+    "почта",
+    "аэропорт",
+    "автобус",
+    "машина",
+    "поезд",
+    "самолет",
+    "корабль",
+    "гора",
+    "река",
+    "море",
+    "лес",
+    "луна",
+    "небо",
+    "земля",
+    "воздух"
+]
+
+verbs_trans = [
+    "говорить",
+    "читать",
+    "писать",
+    "учить",
+    "знать",
+    "понимать",
+    "слушать",
+    "открывать",
+    "закрывать",
+    "изучать",
+    "пить",
+    "запоминать",
+    "искать",
+    "хвалить",
+    "слышать",
+    "любить",
+    "видеть",
+    "находить",
+    "заканчивать",
+    "использовать",
+    "получать",
+    "добавлять",
+    "смотреть",
+    "покупать",
+    "продавать",
+    "учить",
+    "терять",
+    "вспоминать",
+    "брать",
+    "приглашать",
+    "навещать",
+    "уважать",
+    "ремонтировать",
+    "чистить",
+    "готовить",
+    "терять",
+    "исследовать"
+]
+
+verbs_intrans = [
+    "думать",
+    "работать",
+    "вести",
+    "помогать",
+    "танцевать",
+    "петь",
+    "учиться",
+    "переезжать",
+    "путешествовать",
+    "гулять",
+    "отвечать",
+    "прощать",
+    "меняться",
+    "трудиться",
+    "преуспевать"
+]
+
+# все функции
+morph = pymorphy3.MorphAnalyzer()
+#морфология глагола
+def verb_gen(gram: list):
+    global verbs
+    global GRAM
+    clitics = {
+        "allatī": ["hā", "hā", "hā", "hā"],
+        "allaḏī": ['hu', 'hi', 'hū', 'hī'],
+        "ʾallaḏīna": ['hum', 'him', 'hum', 'him'],
+        "ʾallātī": ['hunna', 'hinna', 'hunna', 'hinna'],
+        "allaḏayni": ['humā', 'himā', 'humā', 'himā'],
+        "allatayni": ['humā', 'himā', 'humā', 'himā']
+    }
+    form = gram[1]
+    verb = verbs[gram[0]][0]
+    vow = verbs[gram[0]][1]
+    der = verbs[gram[0]][2]
+    weak = verbs[gram[0]][3]
+    harmony = 0
+    length = 0
+    vows = ["a", "i", "u", ["ā", "ī", "ū"]]
+    verb = verb[:-1]
+    if form[0] == "perf":
+        if form[1] == "3msg":
+            verb += "a"
+        elif form[1] == "3fsg":
+            verb += "at"
+        elif form[1] == "2msg":
+            verb += "ta"
+        elif form[1] == "2fsg":
+            verb += "ti"
+        elif form[1] == "1sg":
+            verb += "tu"
+        elif form[1] == "3mdu":
+            verb += "ā"
+        elif form[1] == "3fdu":
+            verb += "atā"
+        elif form[1] == "2du":
+            verb += "tumā"
+        elif form[1] == "1dp":
+            verb += "nā"
+        elif form[1] == "3mpl":
+            verb += "ū"
+        elif form[1] == "3fpl":
+            verb += "na"
+        elif form[1] == "2mpl":
+            verb += "tum"
+        elif form[1] == "2fpl":
+            verb += "tunna"
+    elif form[0] == "imp":
+        if der == 1:
+            verb = verb[0] + verb[2] + vow + verb[4]
+        else:
+            verb = verb[:-2] + vow + verb[-1]
+        if verb[0] == "i":
+            verb = verb[1:]
+        if der == 1 or der > 4:
+            if form[1] == "3msg" or form[1] == "3mdu" or form[1] == "3mpl" or form[1] == "3fpl":
+                verb = "ya" + verb
+            elif form[1] == "1sg":
+                verb = "ʾa" + verb
+                if "ʾaʾ" in verb:
+                   verb = "ʾā" + verb[4:]
+                # диссимиляция хамзы
+            elif form[1] == "1dp":
+                verb = "na" + verb
+            else:
+                verb = "ta" + verb
+        if der > 1 and der < 5:
+            if der == 4 and "ˀā" not in verb:
+                verb = verb[2:]
+            if form[1] == "3msg" or form[1] == "3mdu" or form[1] == "3mpl" or form[1] == "3fpl":
+                verb = "yu" + verb
+            elif form[1] == "1sg":
+                verb = "ˀu" + verb
+                if "ʾuʾ" in verb:
+                   verb = "ʾū" + verb[4:]
+                # диссимиляция хамзы
+            elif form[1] == "1dp":
+                verb = "nu" + verb
+            else:
+                verb = "tu" + verb
+        if "du" in form[1]:
+            verb += "āni"
+        elif "mpl" in form[1]:
+            verb += "ūna"
+        elif "fpl" in form[1]:
+            verb += "na"
+        elif "2fsg" in form[1]:
+            verb += "īna"
+        else:
+            verb += "u"
+    #СЛАБЫЕ
+    zero = verb.find("0")
+    #удвоенный -- вроде работает
+    if weak == 4:
+        if form[0] == "perf":
+            if "3" in form[1] and form[1] != "3fpl":
+                if "3m" in form[1]:
+                    verb = verb[:-4] + verb[-3] + verb[-4] + verb[-2:]
+                elif form[1] == "3fsg":
+                    verb = verb[:-5] + verb[-4] + verb[-5] + verb[-3:]
+                elif form[1] == "3fdu":
+                    verb = verb[:-6] + verb[-5] + verb[-6] + verb[-4:]
+            if "aa" in verb:
+                verb = verb.replace("aa", "a")
+        else:
+            if "fpl" not in form[1]:
+                if "sg" in form[1] and "2f" not in form[1] or form[1] == "1dp":
+                    verb = verb[:-4] + vow + verb[-2] + verb[-2:]
+                else:
+                    verb = verb[:-6] + vow + verb[-4] + verb[-4:]
+
+    #первый слабый
+    if weak == 1:
+        if der == 8:
+            verb = verb.replace("0", verb[zero+1])
+        elif der == 1 and form[0] == "imp":
+            verb = verb[:zero] + verb[zero+1:]
+        else:
+            verb = verb.replace("0", "w")
+
+    #второй слабый -- вроде работает
+    if weak == 2:
+        verb = verb[:zero] + verb[zero+1:]
+        if der == 1 and form[0] == "perf":
+            if vow == "i" or vow == "a":
+                verb = verb[:zero] + "i" + verb[zero+1:]
+            elif vow == "u":
+                verb = verb[:zero] + "u" + verb[zero+1:]
+        if form[0] == "perf":
+             if verb[zero+2] not in vows and verb[zero+2] not in vows[3]:
+                if verb[zero-1] in vows:
+                    verb = verb[:zero-1] + verb[zero:]
+             else:
+                if verb[zero-1] in vows:
+                    verb = verb[:zero-1] + "ā" + verb[zero+1:]
+                else:
+                    verb = verb[:zero] + "ā" + verb[zero+1:]
+        else:
+            if verb[zero+2] in vows or verb[zero+2] in vows[3]:
+                verb = verb[:zero] + vows[3][vows.index(verb[zero])] + verb[zero+1:]
+            if verb[zero-1] in vows:
+                verb = verb[:zero-1] + verb[zero:]
+
+    #третий слабый
+    if zero != -1 and weak == 3:
+        #если в основе а -- теперь работает
+        if verb[zero-1] == "a":
+            if verb[zero + 1] not in vows[3] and verb[zero + 1] in vows: #and (zero == len(verb) - 3 and verb[-2] in vows or zero > len(verb) - 3):
+                if verb[zero-1] in vows and verb[zero+1] in vows:
+                    verb = verb[:zero+1] + verb[zero+2:]
+                    if verb[-1] == "0" or verb[zero+1] in vows:
+                        verb = verb.replace(verb[zero-1] + "0", vows[3][vows.index(verb[zero-1])] + "0")
+                verb = verb[:zero] + verb[zero+1:]
+            if verb[zero-1] in vows:
+                verb = verb.replace("0ū", "w")
+                verb = verb.replace("0ī", "y")
+            if vow == "i" or vow == "a":
+                verb = verb.replace("0", "y")
+            elif vow == "u":
+                verb = verb.replace("0", "w")
+        #если в основе не а -- теперь работает
+        elif verb[zero-1] != "a":
+            if verb[zero+1] != "a" and verb[zero+1] != "ā":
+                verb = verb[:zero] + verb[zero+1:]
+                if verb[zero-1] in vows and verb[zero] in vows[3]:
+                    verb = verb[:zero-1] + verb[zero:]
+                if verb[zero-1] in vows and verb[zero-1] not in vows[3]:
+                    if verb[zero] == "t":
+                        verb = verb.replace(verb[zero-1] + "t", vows[3][vows.index(verb[zero-1])] + "t")
+                    elif verb[zero] == "n":
+                        verb = verb.replace(verb[zero-1] + "n", vows[3][vows.index(verb[zero-1])] + "n")
+                    elif verb[zero-1] == verb[-2]:
+                        verb = verb.replace(verb[zero-1], vows[3][vows.index(verb[zero-1])])
+                    if verb[zero] in vows or verb[zero] in vows[3]:
+                        verb = verb[:zero] + verb[zero+1:]
+            if vow == "i" or vow == "a":
+                verb = verb.replace("0", "y")
+            elif vow == "u":
+                verb = verb.replace("0", "w")
+    if "sawfa" in form:
+        verb = "sawfa" + " " + verb
+
+    if verb[-1] not in vows:
+        length = 2
+    if verb[-1] == "i" or verb[-1] == "ī":
+        harmony = 1
+    if len(gram) >= 3:
+        verb = gram[2] + " " + verb
+    if len(gram) > 3:
+        verb += clitics[gram[-2]][length+harmony]
+    return verb
+
+
+
+#склонение
+
+
+def declension(noun: list):
+    global nouns
+    word = noun[0]
+    condition = noun[1]
+    form = noun[2]
+    num = noun[3]
+    ends = {"nom": "u", "gen": "i", "acc": "a"}
+    assamsu = {"t", "d", "r", "z", "s", "n", "š", "ṯ", "ḏ", "ṣ", "ḍ", "ṭ", "ẓ"}
+    if num == "pl":
+        result = pl_declension(word, condition, form)
+        if condition == "indef":
+            return result
+        else:
+            word = result
+    elif num == "du":
+        if nouns[word][0][-1] == "u":
+            word = nouns[word][0][:-1]
+        if form == "nom":
+            word = nouns[word][0] + "ā"
+        else:
+            word = nouns[word][0] + "ay"
+        if condition == "constr":
+            return word
+        else:
+            word = word + "ni"
+        if condition == "indef":
+            return word
+    elif nouns[word][0][-1] == "u":
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        if condition != "def":
+            return word
+    else:
+        word = nouns[word][0] + ends[form]
+    if condition == "indef":
+        return word + "n"
+    elif condition == "def":
+        if word[-1] == "ū" or word[-1] == "ī":
+            word = word + "na"
+        if word[0] in assamsu:
+            return "a" + word[0] + "-" + word
+        else:
+            return "al-" + word
+    elif condition == "constr":
+        return word
+
+
+def pl_declension(word: str, condition: str, form: str):
+    global nouns
+    word_pl = nouns[word][1]
+    word = nouns[word][0]
+    if word_pl == 1:
+        if word[-1] == "u":
+            word = word[:-1]
+        if word[-2:] == "at":
+            word = word[:-2] + "āt"
+            if form == "nom":
+                word = word + "u"
+            else:
+                word = word + "i"
+            if condition == "indef":
+                word = word + "n"
+            return word
+        else:
+            if form == "nom":
+                word = word + "ū"
+            else:
+                word = word + "ī"
+            if condition == "indef":
+                word = word + "na"
+            return word
+    elif word_pl == 0:
+        word = word
+    elif type(word_pl) is str:
+        word = word_pl
+    if word[-1] == "u":
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        return word
+    if form == "nom":
+        word = word + "u"
+    elif form == "gen":
+        word = word + "i"
+    elif form == "acc":
+        word = word + "a"
+    if condition == "indef":
+        word = word + "n"
+    return word
+
+
+#склонение прилагательных
+
+def adj_declension(adj: list):
+    global adjs
+    word = adj[0]
+    condition = adj[1]
+    form = adj[2]
+    num = adj[3]
+    gender = adj[4]
+    ends = {"nom": "u", "gen": "i", "acc": "a"}
+    assamsu = {"t", "d", "r", "z", "s", "n", "š", "ṯ", "ḏ", "ṣ", "ḍ", "ṭ", "ẓ"}
+    if gender == "fem":
+        word = adjs[word][0] + "at"
+        if num == "pl":
+            word = word + "_"
+    if num == "pl":
+        result = adj_pl_declension(word, condition, form)
+        if condition == "indef":
+            return result
+        else:
+            word = result
+    elif num == "du":
+        word = adjs[word][0]
+        if word[-1] == "u":
+            word = word[:-1]
+        if form == "nom":
+            word = word + "ā"
+        else:
+            word = word + "ay"
+        if condition == "constr":
+            return word
+        else:
+            word = word + "ni"
+        if condition == "indef":
+            return word
+    elif adjs[word][0] == "u":
+        word = adjs[word][0]
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        if condition != "def":
+            return word
+    else:
+        word = adjs[word][0] + ends[form]
+    if condition == "indef":
+        return word + "n"
+    elif condition == "def":
+        if word[-1] == "ū" or word[-1] == "ī":
+            word = word + "na"
+        if word[0] in assamsu:
+            return "a" + word[0] + "-" + word
+        else:
+            return "al-" + word
+    elif condition == "constr":
+        return word
+
+def adj_pl_declension(word, condition, form):
+    global adjs
+    word_pl = adjs[word][1]
+    word = adjs[word][0]
+    if word[-1] == "_":
+        word = word[:-2] + "āt"
+        if form == "nom":
+            word = word + "u"
+        else:
+            word = word + "i"
+        if condition == "indef":
+            word = word + "n"
+        return word
+    if word_pl == 1:
+        if word[-2:] == "at":
+            word = word[:-2] + "āt"
+            if form == "nom":
+                word = word + "u"
+            else:
+                word = word + "i"
+            if condition == "indef":
+                word = word + "n"
+            return word
+        else:
+            if form == "nom":
+                word = word + "ū"
+            else:
+                word = word + "ī"
+            if condition == "indef":
+                word = word + "na"
+            return word
+    elif word_pl == 0:
+        word = word
+    elif type(word_pl) is str:
+        word = word_pl
+    if word[-1] == "u":
+        if form != "nom":
+            if condition == "indef":
+                word = word[:-1] + "a"
+            else:
+                if form == "gen":
+                    word = word[:-1] + "i"
+                if form == "acc":
+                    word = word[:-1] + "a"
+        return word
+    if form == "nom":
+        word = word + "u"
+    elif form == "gen":
+        word = word + "i"
+    elif form == "acc":
+        word = word + "a"
+    if condition == "indef":
+        word = word + "n"
+    return word
+
+
+
+
+# проверка предложений
+
+def check(message, sentence):
+    punct = [".", ",", ")", "(", "\"", "\'", "\\", "|", "/", "?", "!", ":", ";", "-", "=", "+"]
+    symbols = 0
+    for symb in punct:
+        if symb in message:
+            message = message.replace(symb, "")
+            symbols = 1
+    answer = ""
+    if symbols == 1:
+        answer = "Не используй, пожалуйста, знаки препинания!\n"
+    if message.islower() == False:
+        answer += "Не используй, пожалуйста, заглавные буквы!\n"
+        message = message.lower()
+    if message == sentence:
+        answer += "Молодец! Всё абсолютно верно:)"
+    else:
+        answer += f"К сожалению, есть какие-то ошибки:(\nРекомендуем ознакомиться с грамматическим конспектом!\nПравильный перевод: {sentence}"
+
+    return answer
+
+
+def grammar(chat_id, bot):
+    global results
+    def rus_gen_with_arab():
+        global results
+        try:
+            global GRAM
+            GRAM = {}
+            determiner = random.choice(list(determiners.keys()))
+            preposition = random.choice(list(prepositions.keys()))
+            GRAM["PREP"] = preposition
+
+            while True:
+                noun_nom_syr = random.choice(list(nouns.items()))[0]
+                if noun_nom_syr in nouns_anim_f or noun_nom_syr in nouns_anim_m:
+                    break
+            noun_nom_number_choice = random.choice(['sing', 'plur', 'plur'])
+            noun_nom = morph.parse(noun_nom_syr)[0].inflect({noun_nom_number_choice}).word
+            dual_nom_yes = ""
+            if noun_nom_number_choice == 'plur':
+                dual_nom_choice = random.choice([1, 2])
+                if dual_nom_choice == 1:
+                    dual_nom_yes = "(du)"
+                    GRAM["S1"] = [noun_nom_syr, "indef", "nom", "du"]
+                else:
+                    GRAM["S1"] = [noun_nom_syr, "indef", "nom", "pl"]
+            else:
+                GRAM["S1"] = [noun_nom_syr, "indef", "nom", "sg"]
+            dual_nom = f" {dual_nom_yes}" if dual_nom_yes else ""
+
+            while True:
+                noun_acc_syr = random.choice(list(nouns.items()))[0]
+                if noun_acc_syr in nouns_unanim_m or noun_acc_syr in nouns_unanim_f:
+                    break
+
+            noun_acc_number_choice = random.choice(['sing', 'plur', 'plur'])
+            noun_acc = morph.parse(noun_acc_syr)[0].inflect({'accs', noun_acc_number_choice}).word
+            dual_acc_yes = ""
+            if noun_acc_number_choice == 'plur':
+                dual_acc_choice = random.choice([1, 2])
+                if dual_acc_choice == 1:
+                    dual_acc_yes = "(du)"
+                    GRAM["OA1"] = [noun_acc_syr, "indef", "acc", "du"]
+                    GRAM["OA2"] = [noun_acc_syr, "indef", "acc", "du"]
+                else:
+                    GRAM["OA1"] = [noun_acc_syr, "indef", "acc", "pl"]
+                    GRAM["OA2"] = [noun_acc_syr, "indef", "acc", "pl"]
+            else:
+                GRAM["OA1"] = [noun_acc_syr, "indef", "acc", "sg"]
+                GRAM["OA2"] = [noun_acc_syr, "indef", "acc", "sg"]
+            dual_acc = f" {dual_acc_yes}" if dual_acc_yes else ""
+
+            while True:
+                noun_gen_syr = random.choice(list(nouns.items()))[0]
+                if noun_gen_syr in nouns_anim_f or noun_gen_syr in nouns_anim_m:
+                    break
+            noun_gen_number_choice = random.choice(['sing', 'plur', 'plur'])
+            noun_gen = morph.parse(noun_gen_syr)[0].inflect({'gent', noun_gen_number_choice}).word
+            dual_gen_yes = ""
+            if noun_gen_number_choice == 'plur':
+                dual_gen_choice = random.choice([1, 2])
+                if dual_gen_choice == 1:
+                    dual_gen_yes = "(du)"
+                    GRAM["OG1"] = [noun_gen_syr, "indef", "gen", "du"]
+                    GRAM["OG2"] = [noun_gen_syr, "indef", "gen", "du"]
+                else:
+                    GRAM["OG1"] = [noun_gen_syr, "indef", "gen", "pl"]
+                    GRAM["OG2"] = [noun_gen_syr, "indef", "gen", "pl"]
+            else:
+                GRAM["OG1"] = [noun_gen_syr, "indef", "gen", "sg"]
+                GRAM["OG2"] = [noun_gen_syr, "indef", "gen", "sg"]
+            dual_gen = f" {dual_gen_yes}" if dual_gen_yes else ""
+
+            while True:
+                noun_loc_syr = random.choice(list(nouns.items()))[0]
+                if noun_loc_syr in nouns_locativable:
+                    break
+            noun_loc_number_choice = random.choice(['sing', 'plur', 'plur'])
+            noun_loc = morph.parse(noun_loc_syr)[0].inflect({prepositions[preposition][0], noun_loc_number_choice}).word
+            dual_loc_yes = ""
+            if noun_loc_number_choice == 'plur':
+                dual_loc_choice = random.choice([1, 2])
+                if dual_loc_choice == 1:
+                    dual_loc_yes = "(du)"
+                    GRAM["OL1"] = [noun_loc_syr, "indef", "gen", "du"]
+                    GRAM["OL2"] = [noun_loc_syr, "indef", "gen", "du"]
+                else:
+                    GRAM["OL1"] = [noun_loc_syr, "indef", "gen", "pl"]
+                    GRAM["OL2"] = [noun_loc_syr, "indef", "gen", "pl"]
+            else:
+                GRAM["OL1"] = [noun_loc_syr, "indef", "gen", "sg"]
+                GRAM["OL2"] = [noun_loc_syr, "indef", "gen", "sg"]
+            dual_loc = f" {dual_loc_yes}" if dual_loc_yes else ""
+
+            while True:
+                noun_nom_syr_sub = random.choice(list(nouns.items()))[0]
+                if noun_nom_syr_sub in nouns_anim_f or noun_nom_syr_sub in nouns_anim_m:
+                    if noun_nom_syr_sub != noun_nom_syr:
+                        break
+            noun_nom_number_choice_sub = random.choice(['sing', 'plur', 'plur'])
+            noun_nom_syr_sub = morph.parse(noun_nom_syr_sub)[0].inflect({noun_nom_number_choice_sub}).word
+            dual_nom_yes = ""
+            if noun_nom_number_choice_sub == 'plur':
+                dual_nom_choice_sub = random.choice([1, 2])
+                if dual_nom_choice_sub == 1:
+                    dual_nom_yes_sub = "(du)"
+                    GRAM["S2"] = [noun_nom_syr_sub, "indef", "nom", "du"]
+                else:
+                    GRAM["S2"] = [noun_nom_syr_sub, "indef", "nom", "pl"]
+            else:
+                GRAM["S2"] = [noun_nom_syr_sub, "indef", "nom", "sg"]
+            dual_nom_sub = f" {dual_nom_yes_sub}" if dual_nom_yes_sub else ""
+            S_NP5 = f'{noun_nom_syr_sub}{dual_nom_sub}'
+
+            verb = random.choice(list(verbs.items()))[0]
+            verb_forms = [
+                form.word for form in morph.parse(verb)[0].lexeme
+                if 'VERB' in form.tag and 'impr' not in form.tag
+            ]
+            verb_personal = random.choice(verb_forms)
+
+            GRAM["V1"] = [verb, []]
+            if morph.parse(verb_personal)[0].tag.tense == "past":
+                GRAM["V1"][1].extend(("perf", "3"))
+            else:
+                GRAM["V1"][1].extend(("imp", morph.parse(verb_personal)[0].tag.person[:1]))
+                if morph.parse(verb_personal)[0].tag.number == "plur":
+                    gen_num = random.choice([" (f, pl)", " (f, du)", " (m, pl)", " (m, du)"])
+                if morph.parse(verb_personal)[0].tag.number == "sing":
+                    gen_num = random.choice([" (f)", " (m)"])
+                verb_personal += gen_num
+            if morph.parse(verb_personal)[0].tag.tense == "futr":
+                GRAM["V1"][1].append("sawfa")
+            if GRAM["V1"][1][1] == "3":
+                if "f" in verb_personal:
+                    GRAM["V1"][1][1] += "f"
+                elif "m" in verb_personal:
+                    GRAM["V1"][1][1] += "m"
+                if "du" in verb_personal:
+                    GRAM["V1"][1][1] += "du"
+                elif "pl" in verb_personal:
+                    GRAM["V1"][1][1] += "pl"
+                else:
+                    GRAM["V1"][1][1] += "sg"
+            elif GRAM["V1"][1][1] == "2":
+                if "pl" in verb_personal:
+                    if "f" in verb_personal:
+                        GRAM["V1"][1][1] += "fpl"
+                    elif "m" in verb_personal:
+                        GRAM["V1"][1][1] += "mpl"
+                elif "du" in verb_personal:
+                    GRAM["V1"][1][1] += "du"
+                else:
+                    if "f" in verb_personal:
+                        GRAM["V1"][1][1] += "fsg"
+                    elif "m" in verb_personal:
+                        GRAM["V1"][1][1] += "msg"
+            elif GRAM["V1"][1][1] == "1":
+                if "du" in verb_personal or "pl" in verb_personal:
+                    GRAM["V1"][1][1] += "dp"
+                else:
+                    GRAM["V1"][1][1] += "sg"
+            GRAM["V2"] = GRAM["V1"]
+
+            def structure_VP():
+
+                global GRAM
+                global needed_VP
+                needed_VP = []
+                needed_VP.append("V1")
+
+                structure_VP_podtype = random.choice([2, 3])
+
+                if structure_VP_podtype == 1:
+                    structure_NP_podtype = random.choice([1, 2])
+                    if structure_NP_podtype == 1:
+                        needed_VP.append("OA1")
+                        amount_adj = random.choice([1, 2, 3])
+                        used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                        if amount_adj == 3:
+                            needed_VP.extend(("AO11", "AO12", "AO13"))
+                            used_adj[0] = determiner
+                            GRAM["OA1"][1] = "def"
+                            GRAM["AO11"] = [
+                                used_adj[0],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO12"] = [
+                                used_adj[1],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO13"] = [
+                                used_adj[2],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                        elif amount_adj == 2:
+                            needed_VP.extend(("AO12", "AO13"))
+                            GRAM["AO12"] = [
+                                used_adj[0],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO13"] = [
+                                used_adj[1],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                        else:
+                            needed_VP.append("AO12")
+                            GRAM["AO12"] = [
+                                used_adj[0],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+
+                        adj_NP1_gender_check = morph.parse(noun_acc)[0].tag.gender
+                        adj_NP1_animacy_check = morph.parse(noun_acc)[0].tag.animacy
+                        if adj_NP1_animacy_check == None:
+                            adj_NP1_animacy_check = "inan"
+
+                        if noun_acc_number_choice == "sing":
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {adj_NP1_gender_check, adj_NP1_animacy_check, "accs"}
+                            )
+                        else:
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {noun_acc_number_choice, adj_NP1_animacy_check, "accs"}
+                            )
+                        if used_adj_modified_1 is not None:
+                            used_adj[0] = used_adj_modified_1.word
+                        else:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                )
+                            else:
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_1 is not None:
+                                used_adj[0] = used_adj_modified_1.word
+                        if amount_adj > 1:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {
+                                        adj_NP1_gender_check,
+                                        adj_NP1_animacy_check,
+                                        noun_acc_number_choice,
+                                        "accs",
+                                    }
+                                )
+                            else:
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_2 is not None:
+                                used_adj[1] = used_adj_modified_2.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_2 is not None:
+                                    used_adj[1] = used_adj_modified_2.word
+                        if amount_adj > 2:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {
+                                        adj_NP1_gender_check,
+                                        adj_NP1_animacy_check,
+                                        noun_acc_number_choice,
+                                        "accs",
+                                    }
+                                )
+                            else:
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_3 is not None:
+                                used_adj[2] = used_adj_modified_3.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_3 is not None:
+                                    used_adj[2] = used_adj_modified_3.word
+                        NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
+
+                    elif structure_NP_podtype == 2:
+
+                        needed_VP.extend(("OL1", "PREP", "OA1"))
+
+                        adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+                        adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+                        if adjective_NP2 != False:
+                            needed_VP.append("AOL")
+                            GRAM["AOL"] = [
+                                adjective_NP2,
+                                "indef",
+                                "gen",
+                                GRAM["OL1"][3],
+                                nouns[morph.parse(noun_loc)[0].normal_form][2],
+                            ]
+                            if noun_loc_number_choice == "sing":
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect(
+                                        {adj_NP2_gender_check, noun_loc_number_choice, prepositions[preposition][0]})
+                                    .word
+                                )
+                            else:
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect({noun_loc_number_choice, prepositions[preposition][0]})
+                                    .word
+                                )
+
+                        adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+
+                        NP = f"{noun_acc}{dual_acc} {preposition}{adjective_NP2_return} {noun_loc}{dual_loc}"
+
+                    while True:
+                        verb = random.choice(list(verbs.keys()))
+                        if verb in verbs_trans:
+                            break
+
+                    return f"{verb} {NP}"
+
+                elif structure_VP_podtype == 2:
+                    while True:
+                        verb = random.choice(list(verbs.keys()))
+                        if verb in verbs_intrans:
+                            break
+                    verb_forms = [
+                        form.word
+                        for form in morph.parse(verb)[0].lexeme
+                        if "VERB" in form.tag and "impr" not in form.tag and "past" not in form.tag
+                    ]
+                    verb_personal = random.choice(verb_forms)
+
+                    GRAM["V1"] = [verb, []]
+                    if morph.parse(verb_personal)[0].tag.tense == "past":
+                        GRAM["V1"][1].extend(("perf", "3"))
+                    else:
+                        GRAM["V1"][1].extend(("imp", morph.parse(verb_personal)[0].tag.person[:1]))
+                        if morph.parse(verb_personal)[0].tag.number == "plur":
+                            gen_num = random.choice([" (f, pl)", " (f, du)", " (m, pl)", " (m, du)"])
+                        if morph.parse(verb_personal)[0].tag.number == "sing":
+                            gen_num = random.choice([" (f)", " (m)"])
+                        verb_personal += gen_num
+                    if morph.parse(verb_personal)[0].tag.tense == "futr":
+                        GRAM["V1"][1].append("sawfa")
+                    if GRAM["V1"][1][1] == "3":
+                        if "f" in verb_personal:
+                            GRAM["V1"][1][1] += "f"
+                        elif "m" in verb_personal:
+                            GRAM["V1"][1][1] += "m"
+                        if "du" in verb_personal:
+                            GRAM["V1"][1][1] += "du"
+                        elif "pl" in verb_personal:
+                            GRAM["V1"][1][1] += "pl"
+                        else:
+                            GRAM["V1"][1][1] += "sg"
+                    elif GRAM["V1"][1][1] == "2":
+                        if "pl" in verb_personal:
+                            if "f" in verb_personal:
+                                GRAM["V1"][1][1] += "fpl"
+                            elif "m" in verb_personal:
+                                GRAM["V1"][1][1] += "mpl"
+                        elif "du" in verb_personal:
+                            GRAM["V1"][1][1] += "du"
+                        else:
+                            if "f" in verb_personal:
+                                GRAM["V1"][1][1] += "fsg"
+                            elif "m" in verb_personal:
+                                GRAM["V1"][1][1] += "msg"
+                    elif GRAM["V1"][1][1] == "1":
+                        if "du" in verb_personal or "pl" in verb_personal:
+                            GRAM["V1"][1][1] += "dp"
+                        else:
+                            GRAM["V1"][1][1] += "sg"
+
+                    return verb_personal
+
+                elif structure_VP_podtype == 3:
+                    structure_NP_podtype = random.choice([1, 2])
+                    if structure_NP_podtype == 1:
+
+                        needed_VP.append("OA1")
+
+                        amount_adj = random.choice([1, 2, 3])
+                        used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                        if amount_adj == 3:
+
+                            needed_VP.extend(("AO11", "AO12", "AO13"))
+                            used_adj[0] = determiner
+                            GRAM["OA1"][1] = "def"
+                            GRAM["AO11"] = [
+                                used_adj[0],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO12"] = [
+                                used_adj[1],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO13"] = [
+                                used_adj[2],
+                                "def",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                        elif amount_adj == 2:
+
+                            needed_VP.extend(("AO12", "AO13"))
+                            GRAM["AO12"] = [
+                                used_adj[0],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                            GRAM["AO13"] = [
+                                used_adj[1],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+                        else:
+                            needed_VP.append("AO12")
+                            GRAM["AO12"] = [
+                                used_adj[0],
+                                "indef",
+                                "acc",
+                                GRAM["OA1"][3],
+                                nouns[morph.parse(noun_acc)[0].normal_form][2],
+                            ]
+
+                        adj_NP1_gender_check = morph.parse(noun_acc)[0].tag.gender
+                        adj_NP1_animacy_check = morph.parse(noun_acc)[0].tag.animacy
+                        if adj_NP1_animacy_check == None:
+                            adj_NP1_animacy_check = "inan"
+                        if noun_acc_number_choice == "sing":
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {
+                                    adj_NP1_gender_check,
+                                    adj_NP1_animacy_check,
+                                    noun_acc_number_choice,
+                                    "accs",
+                                }
+                            )
+                        else:
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                            )
+                        if used_adj_modified_1 is not None:
+                            used_adj[0] = used_adj_modified_1.word
+                        else:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                )
+                            else:
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_1 is not None:
+                                used_adj[0] = used_adj_modified_1.word
+                        if amount_adj > 1:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {adj_NP1_gender_check, adj_NP1_animacy_check, "accs"}
+                                )
+                            else:
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {noun_acc_number_choice, adj_NP1_animacy_check, "accs"}
+                                )
+                            if used_adj_modified_2 is not None:
+                                used_adj[1] = used_adj_modified_2.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_2 is not None:
+                                    used_adj[1] = used_adj_modified_2.word
+                        if amount_adj > 2:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {
+                                        adj_NP1_gender_check,
+                                        adj_NP1_animacy_check,
+                                        noun_acc_number_choice,
+                                        "accs",
+                                    }
+                                )
+                            else:
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_3 is not None:
+                                used_adj[2] = used_adj_modified_3.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {
+                                            adj_NP1_gender_check,
+                                            adj_NP1_animacy_check,
+                                            noun_acc_number_choice,
+                                            "accs",
+                                        }
+                                    )
+                                else:
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                    )
+
+                                if used_adj_modified_3 is not None:
+                                    used_adj[2] = used_adj_modified_3.word
+
+                        NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
+
+                    elif structure_NP_podtype == 2:
+
+                        needed_VP.extend(("OL1", "PREP", "OA1"))
+
+                        adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+                        adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+                        if adjective_NP2 != False:
+
+                            needed_VP.append("AOL")
+                            GRAM["AOL"] = [
+                                adjective_NP2,
+                                "indef",
+                                "gen",
+                                GRAM["OL1"][3],
+                                nouns[morph.parse(noun_loc)[0].normal_form][2],
+                            ]
+
+                            if noun_loc_number_choice == "sing":
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect(
+                                        {adj_NP2_gender_check, noun_loc_number_choice, prepositions[preposition][0]})
+                                    .word
+                                )
+                            else:
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect({noun_loc_number_choice, prepositions[preposition][0]})
+                                    .word
+                                )
+
+                        adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+
+                        NP = f"{noun_acc}{dual_acc} {preposition}{adjective_NP2_return} {noun_loc}{dual_loc}"
+
+                    while True:
+                        verb = random.choice(list(verbs.keys()))
+                        if verb in verbs_trans:
+                            break
+                    verb_forms = [
+                        form.word
+                        for form in morph.parse(verb)[0].lexeme
+                        if "VERB" in form.tag and "impr" not in form.tag and "past" not in form.tag
+                    ]
+                    verb_personal = random.choice(verb_forms)
+
+                    GRAM["V1"] = [verb, []]
+                    GRAM["V1"][1].extend(("imp", morph.parse(verb_personal)[0].tag.person[:1]))
+                    if morph.parse(verb_personal)[0].tag.number == "plur":
+                        gen_num = random.choice([" (f, pl)", " (f, du)", " (m, pl)", " (m, du)"])
+                    if morph.parse(verb_personal)[0].tag.number == "sing":
+                        gen_num = random.choice([" (f)", " (m)"])
+                    if morph.parse(verb_personal)[0].tag.tense == "futr":
+                        GRAM["V1"][1].append("sawfa")
+                    verb_personal += gen_num
+                    if GRAM["V1"][1][1] == "3":
+                        if "f" in verb_personal:
+                            GRAM["V1"][1][1] += "f"
+                        elif "m" in verb_personal:
+                            GRAM["V1"][1][1] += "m"
+                        if "du" in verb_personal:
+                            GRAM["V1"][1][1] += "du"
+                        elif "pl" in verb_personal:
+                            GRAM["V1"][1][1] += "pl"
+                        else:
+                            GRAM["V1"][1][1] += "sg"
+                    elif GRAM["V1"][1][1] == "2":
+                        if "pl" in verb_personal:
+                            if "f" in verb_personal:
+                                GRAM["V1"][1][1] += "fpl"
+                            elif "m" in verb_personal:
+                                GRAM["V1"][1][1] += "mpl"
+                        elif "du" in verb_personal:
+                            GRAM["V1"][1][1] += "du"
+                        else:
+                            if "f" in verb_personal:
+                                GRAM["V1"][1][1] += "fsg"
+                            elif "m" in verb_personal:
+                                GRAM["V1"][1][1] += "msg"
+                    elif GRAM["V1"][1][1] == "1":
+                        if "du" in verb_personal or "pl" in verb_personal:
+                            GRAM["V1"][1][1] += "dp"
+                        else:
+                            GRAM["V1"][1][1] += "sg"
+
+                    return f"{verb_personal} {NP}"
+
+            def structure_NP():
+
+                global GRAM
+                global needed_NP
+                needed_NP = []
+
+                structure_NP_podtype = random.choice([1, 2, 3, 4, 5])
+                if structure_NP_podtype == 1:
+                    needed_NP.append("S1")
+                    amount_adj = random.choice([1, 2, 3])
+                    used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                    if amount_adj == 3:
+
+                        needed_NP.extend(("AS11", "AS12", "AS13"))
+                        used_adj[0] = determiner
+                        GRAM["S1"][1] = "def"
+                        GRAM["AS11"] = [
+                            used_adj[0],
+                            "def",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+                        GRAM["AS12"] = [
+                            used_adj[1],
+                            "def",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+                        GRAM["AS13"] = [
+                            used_adj[2],
+                            "def",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+                    elif amount_adj == 2:
+                        needed_NP.extend(("AS12", "AS13"))
+                        GRAM["AS12"] = [
+                            used_adj[0],
+                            "indef",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+                        GRAM["AS13"] = [
+                            used_adj[1],
+                            "indef",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+                    else:
+                        needed_NP.append("AS12")
+                        GRAM["AS12"] = [
+                            used_adj[0],
+                            "indef",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+
+                    adj_NP1_gender_check = morph.parse(noun_nom)[0].tag.gender
+                    if noun_nom_number_choice == "sing":
+                        used_adj[0] = (
+                            morph.parse(used_adj[0])[0].inflect({adj_NP1_gender_check, "nomn"}).word
+                        )
+                    else:
+                        used_adj[0] = (
+                            morph.parse(used_adj[0])[0]
+                            .inflect({noun_nom_number_choice, "nomn"})
+                            .word
+                        )
+
+                    if amount_adj > 1:
+                        if noun_nom_number_choice == "sing":
+                            used_adj[1] = (
+                                morph.parse(used_adj[1])[0]
+                                .inflect({adj_NP1_gender_check, "nomn"})
+                                .word
+                            )
+                        else:
+                            used_adj[1] = (
+                                morph.parse(used_adj[1])[0]
+                                .inflect({noun_nom_number_choice, "nomn"})
+                                .word
+                            )
+
+                    if amount_adj > 2:
+                        if noun_nom_number_choice == "sing":
+                            used_adj[2] = (
+                                morph.parse(used_adj[2])[0]
+                                .inflect({adj_NP1_gender_check, "nomn"})
+                                .word
+                            )
+                        else:
+                            used_adj[2] = (
+                                morph.parse(used_adj[2])[0]
+                                .inflect({noun_nom_number_choice, "nomn"})
+                                .word
+                            )
+
+                    return f"{' '.join(used_adj)} {noun_nom}{dual_nom}"
+
+                elif structure_NP_podtype == 2:
+
+                    needed_NP.extend(("OL1", "PREP", "S1"))
+
+                    adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+                    adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+                    if adjective_NP2 != False:
+
+                        needed_NP.append("AOL")
+                        GRAM["AOL"] = [
+                            adjective_NP2,
+                            "indef",
+                            "gen",
+                            GRAM["OL1"][3],
+                            nouns[morph.parse(noun_loc)[0].normal_form][2],
+                        ]
+
+                        if noun_loc_number_choice == "sing":
+                            adjective_NP2 = (
+                                morph.parse(adjective_NP2)[0]
+                                .inflect({adj_NP2_gender_check, noun_loc_number_choice, prepositions[preposition][0]})
+                                .word
+                            )
+                        else:
+                            adjective_NP2 = (
+                                morph.parse(adjective_NP2)[0]
+                                .inflect({noun_loc_number_choice, prepositions[preposition][0]})
+                                .word
+                            )
+
+                    adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+
+                    return f"{noun_nom}{dual_nom} {preposition}{adjective_NP2_return} {noun_loc}{dual_loc}"
+
+                elif structure_NP_podtype == 3:
+
+                    needed_NP.extend(("OG1", "S1"))
+                    GRAM["S1"][1] = "constr"
+
+                    adjective_NP3_1 = random.choice([False, random.choice(list(adjs.keys()))])
+
+                    adj_NP3_1_gender_check = morph.parse(noun_nom)[0].tag.gender
+
+                    if adjective_NP3_1 != False:
+
+                        needed_NP.append("AS12")
+                        GRAM["AS12"] = [
+                            adjective_NP3_1,
+                            "def",
+                            "nom",
+                            GRAM["S1"][3],
+                            nouns[morph.parse(noun_nom)[0].normal_form][2],
+                        ]
+
+                        if noun_nom_number_choice == "sing":
+                            adjective_NP3_1 = (
+                                morph.parse(adjective_NP3_1)[0]
+                                .inflect({adj_NP3_1_gender_check})
+                                .word
+                            )
+                        else:
+                            adjective_NP3_1 = (
+                                morph.parse(adjective_NP3_1)[0]
+                                .inflect({noun_nom_number_choice})
+                                .word
+                            )
+                    adjective_NP3_1_return = f" {adjective_NP3_1}" if adjective_NP3_1 else ""
+
+                    adjective_NP3_2 = random.choice([False, random.choice(list(adjs.keys()))])
+                    adj_NP3_2_gender_check = morph.parse(noun_gen)[0].tag.gender
+                    adj_NP3_2_animacy_check = morph.parse(noun_gen)[0].tag.animacy
+                    if adj_NP3_2_animacy_check == None:
+                        adj_NP3_2_animacy_check = "inan"
+                    adjective_NP3_2_modified = None
+                    adjective_NP3_2_return = ""
+
+                    if adjective_NP3_2:
+
+                        needed_NP.append("AOG")
+                        GRAM["AOG"] = [
+                            adjective_NP3_2,
+                            "indef",
+                            "gen",
+                            GRAM["OG1"][3],
+                            nouns[morph.parse(noun_gen)[0].normal_form][2],
+                        ]
+
+                        if noun_gen_number_choice == "sing":
+                            adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                                {
+                                    adj_NP3_2_gender_check,
+                                    adj_NP3_2_animacy_check,
+                                    noun_gen_number_choice,
+                                    "gent",
+                                }
+                            )
+                        else:
+                            adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                                {adj_NP3_2_animacy_check, noun_gen_number_choice, "gent"}
+                            )
+
+                        if adjective_NP3_2_modified is None:
+                            if noun_gen_number_choice == "sing":
+                                adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                                    {adj_NP3_2_gender_check, noun_gen_number_choice, "gent"}
+                                )
+                            else:
+                                adjective_NP3_2_modified = morph.parse(adjective_NP3_2)[0].inflect(
+                                    {noun_gen_number_choice, "gent"}
+                                )
+
+                        if adjective_NP3_2_modified:
+                            adjective_NP3_2_return = f" {adjective_NP3_2_modified.word}"
+
+                    return f"{adjective_NP3_1_return} {noun_nom}{dual_nom}{adjective_NP3_2_return} {noun_gen}{dual_gen}"
+
+                elif structure_NP_podtype == 4:
+
+                    needed_NP.extend(("S1", "THAT", "V2"))
+
+                    VP_NP4_num = random.choice([1, 2])
+                    while True:
+                        verb = random.choice(list(verbs.keys()))
+                        if verb in verbs_trans:
+                            break
+                    verb_forms = [
+                        form.word
+                        for form in morph.parse(verb)[0].lexeme
+                        if "VERB" in form.tag and "impr" not in form.tag
+                    ]
+                    verb_personal = random.choice(verb_forms)
+
+                    GRAM["V2"] = [verb, []]
+                    if morph.parse(verb_personal)[0].tag.tense == "past":
+                        GRAM["V2"][1].extend(("perf", "3"))
+                    else:
+                        GRAM["V2"][1].extend(
+                            ("imp", "3")
+                        )
+                    if morph.parse(verb_personal)[0].tag.tense == "futr":
+                        GRAM["V2"][1].append("sawfa")
+                    if nouns[noun_nom_syr][2] == "f":
+                        GRAM["V2"][1][1] += "f"
+                    elif nouns[noun_nom_syr][2] == "m":
+                        GRAM["V2"][1][1] += "m"
+                    if morph.parse(noun_nom)[0].tag.number == "sing":
+                        GRAM["V2"][1][1] += "sg"
+                    elif dual_nom == "(du)":
+                        GRAM["V2"][1][1] += "du"
+                    else:
+                        GRAM["V2"][1][1] += "pl"
+
+                    if VP_NP4_num == 1:
+                        structure_NP_podtype = random.choice([1, 2])
+                        if structure_NP_podtype == 1:
+                            needed_NP.append("OA2")
+                            amount_adj = random.choice([1, 2, 3])
+                            used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                            if amount_adj == 3:
+
+                                needed_NP.extend(("AO21", "AO22", "AO23"))
+                                used_adj[0] = determiner
+                                GRAM["OA2"][1] = "def"
+                                GRAM["AO21"] = [
+                                    used_adj[0],
+                                    "def",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+                                GRAM["AO22"] = [
+                                    used_adj[1],
+                                    "def",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+                                GRAM["AO23"] = [
+                                    used_adj[2],
+                                    "def",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+                            elif amount_adj == 2:
+                                needed_NP.extend(("AO22", "AO23"))
+                                GRAM["AO22"] = [
+                                    used_adj[0],
+                                    "indef",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+                                GRAM["AO23"] = [
+                                    used_adj[1],
+                                    "indef",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+                            else:
+                                needed_NP.append("AO22")
+                                GRAM["AO22"] = [
+                                    used_adj[0],
+                                    "indef",
+                                    "acc",
+                                    GRAM["OA2"][3],
+                                    nouns[morph.parse(noun_acc)[0].normal_form][2],
+                                ]
+
+                            adj_NP1_gender_check = morph.parse(noun_acc)[0].tag.gender
+                            adj_NP1_animacy_check = morph.parse(noun_acc)[0].tag.animacy
+                            if adj_NP1_animacy_check == None:
+                                adj_NP1_animacy_check = "inan"
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {adj_NP1_gender_check, adj_NP1_animacy_check, "accs"}
+                                )
+                            else:
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {noun_acc_number_choice, adj_NP1_animacy_check, "accs"}
+                                )
+                            if used_adj_modified_1 is not None:
+                                used_adj[0] = used_adj_modified_1.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_1 is not None:
+                                    used_adj[0] = used_adj_modified_1.word
+                            if amount_adj > 1:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {
+                                            adj_NP1_gender_check,
+                                            adj_NP1_animacy_check,
+                                            noun_acc_number_choice,
+                                            "accs",
+                                        }
+                                    )
+                                else:
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_2 is not None:
+                                    used_adj[1] = used_adj_modified_2.word
+                                else:
+                                    if noun_acc_number_choice == "sing":
+                                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                            {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                        )
+                                    else:
+                                        used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                            {noun_acc_number_choice, "accs"}
+                                        )
+                                    if used_adj_modified_2 is not None:
+                                        used_adj[1] = used_adj_modified_2.word
+                            if amount_adj > 2:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {
+                                            adj_NP1_gender_check,
+                                            adj_NP1_animacy_check,
+                                            noun_acc_number_choice,
+                                            "accs",
+                                        }
+                                    )
+                                else:
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_3 is not None:
+                                    used_adj[2] = used_adj_modified_3.word
+                                else:
+                                    if noun_acc_number_choice == "sing":
+                                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                            {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                        )
+                                    else:
+                                        used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                            {noun_acc_number_choice, "accs"}
+                                        )
+                                    if used_adj_modified_3 is not None:
+                                        used_adj[2] = used_adj_modified_3.word
+                            NP = f"{' '.join(used_adj)} {noun_acc}{dual_acc}"
+                        elif structure_NP_podtype == 2:
+
+                            needed_NP.extend(("OL2", "PREP", "OA2"))
+
+                            adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+                            adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+                            if adjective_NP2 != False:
+
+                                needed_NP.append("AOL")
+                                GRAM["AOL"] = [
+                                    adjective_NP2,
+                                    "indef",
+                                    "gen",
+                                    GRAM["OL2"][3],
+                                    nouns[morph.parse(noun_loc)[0].normal_form][2],
+                                ]
+
+                                if noun_loc_number_choice == "sing":
+                                    adjective_NP2 = (
+                                        morph.parse(adjective_NP2)[0]
+                                        .inflect(
+                                            {adj_NP2_gender_check, noun_loc_number_choice, prepositions[preposition][0]}
+                                        )
+                                        .word
+                                    )
+                                else:
+                                    adjective_NP2 = (
+                                        morph.parse(adjective_NP2)[0]
+                                        .inflect({noun_loc_number_choice, prepositions[preposition][0]})
+                                        .word
+                                    )
+
+                            adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+
+                            NP = f"{noun_acc}{dual_acc} {preposition}{adjective_NP2_return} {noun_loc}{dual_loc}"
+                        noun_gender_check = morph.parse(noun_nom)[0].tag.gender
+
+                        verb_person_check = morph.parse(verb_personal)[0].tag.person
+                        verb_tense_check = morph.parse(verb_personal)[0].tag.tense
+
+                        grammemes = set()
+                        grammemes.add(verb_tense_check)
+                        if verb_person_check != "3per" and verb_tense_check != "past":
+                            grammemes = {"3per"}
+                        if noun_nom_number_choice:
+                            grammemes.add(noun_nom_number_choice)
+                        else:
+                            grammemes.add(",sing")
+                        if (
+                                noun_nom_number_choice == "sing"
+                                and verb_tense_check == "past"
+                                and noun_gender_check
+                        ):
+                            grammemes.add(noun_gender_check)
+                        inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
+                        VP_NP4 = f"{inflected_verb} {NP}"
+
+                    elif VP_NP4_num == 2:
+                        while True:
+                            verb = random.choice(list(verbs.keys()))
+                            if verb in verbs_intrans:
+                                break
+                        verb_forms = [
+                            form.word
+                            for form in morph.parse(verb)[0].lexeme
+                            if "VERB" in form.tag and "impr" not in form.tag
+                        ]
+
+                        noun_gender_check = morph.parse(noun_nom)[0].tag.gender
+                        verb_person_check = morph.parse(verb_personal)[0].tag.person
+                        verb_tense_check = morph.parse(verb_personal)[0].tag.tense
+
+                        grammemes = set()
+                        grammemes.add(verb_tense_check)
+                        if verb_person_check != "3per" and verb_tense_check != "past":
+                            grammemes = {"3per"}
+                        if noun_nom_number_choice:
+                            grammemes.add(noun_nom_number_choice)
+                        else:
+                            grammemes.add(",sing")
+                        if (
+                                noun_nom_number_choice == "sing"
+                                and verb_tense_check == "past"
+                                and noun_gender_check
+                        ):
+                            grammemes.add(noun_gender_check)
+                        inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
+                        VP_NP4 = inflected_verb
+
+                    if noun_nom_number_choice == "plur":
+                        that_NP4 = "которые"
+                    else:
+                        that4_gender_check = morph.parse(noun_nom)[0].tag.gender
+                        that4_gender_forms = {
+                            "masc": "который",
+                            "femn": "которая",
+                            "neut": "которое",
+                        }
+                        that_NP4 = that4_gender_forms.get(that4_gender_check)
+
+                    GRAM["THAT"] = [that_NP4, noun_nom + dual_nom]
+                    return f"{noun_nom}{dual_nom}, {that_NP4} {VP_NP4}"
+
+                elif structure_NP_podtype == 5:
+
+                    needed_NP.extend(("S1", "THAT", "V2"))
+
+                    while True:
+                        verb = random.choice(list(verbs.keys()))
+                        if verb in verbs_trans:
+                            break
+                    verb_forms = [
+                        form.word
+                        for form in morph.parse(verb)[0].lexeme
+                        if "VERB" in form.tag and "impr" not in form.tag
+                    ]
+                    verb_personal = random.choice(verb_forms)
+                    structure_NP_podtype = random.choice([1, 2])
+                    if structure_NP_podtype == 1:
+                        amount_adj = random.choice([1, 2, 3])
+                        used_adj = random.sample(sorted(adjs.keys()), amount_adj)
+                        if amount_adj == 3:
+
+                            needed_NP.extend(("AS11", "AS12", "AS13"))
+                            used_adj[0] = determiner
+                            GRAM["S1"][1] = "def"
+                            GRAM["AS11"] = [
+                                used_adj[0],
+                                "def",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+                            GRAM["AS12"] = [
+                                used_adj[1],
+                                "def",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+                            GRAM["AS13"] = [
+                                used_adj[2],
+                                "def",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+                        elif amount_adj == 2:
+                            needed_NP.extend(("AS12", "AS13"))
+                            GRAM["AS12"] = [
+                                used_adj[0],
+                                "indef",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+                            GRAM["AS13"] = [
+                                used_adj[1],
+                                "indef",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+                        else:
+                            needed_NP.append("AS12")
+                            GRAM["AS12"] = [
+                                used_adj[0],
+                                "indef",
+                                "nom",
+                                GRAM["S1"][3],
+                                nouns[morph.parse(noun_nom)[0].normal_form][2],
+                            ]
+
+                        adj_NP1_gender_check = morph.parse(noun_nom)[0].tag.gender
+                        adj_NP1_animacy_check = morph.parse(noun_nom)[0].tag.animacy
+                        if adj_NP1_animacy_check == None:
+                            adj_NP1_animacy_check = "inan"
+                        if noun_acc_number_choice == "sing":
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {
+                                    adj_NP1_gender_check,
+                                    adj_NP1_animacy_check,
+                                    noun_acc_number_choice,
+                                    "accs",
+                                }
+                            )
+                        else:
+                            used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                            )
+                        if used_adj_modified_1 is not None:
+                            used_adj[0] = used_adj_modified_1.word
+                        else:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                )
+                            else:
+                                used_adj_modified_1 = morph.parse(used_adj[0])[0].inflect(
+                                    {noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_1 is not None:
+                                used_adj[0] = used_adj_modified_1.word
+                        if amount_adj > 1:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {
+                                        adj_NP1_gender_check,
+                                        adj_NP1_animacy_check,
+                                        noun_acc_number_choice,
+                                        "accs",
+                                    }
+                                )
+                            else:
+                                used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                    {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_2 is not None:
+                                used_adj[1] = used_adj_modified_2.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_2 = morph.parse(used_adj[1])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_2 is not None:
+                                    used_adj[1] = used_adj_modified_2.word
+                        if amount_adj > 2:
+                            if noun_acc_number_choice == "sing":
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {
+                                        adj_NP1_gender_check,
+                                        adj_NP1_animacy_check,
+                                        noun_acc_number_choice,
+                                        "accs",
+                                    }
+                                )
+                            else:
+                                used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                    {adj_NP1_animacy_check, noun_acc_number_choice, "accs"}
+                                )
+                            if used_adj_modified_3 is not None:
+                                used_adj[2] = used_adj_modified_3.word
+                            else:
+                                if noun_acc_number_choice == "sing":
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {adj_NP1_gender_check, noun_acc_number_choice, "accs"}
+                                    )
+                                else:
+                                    used_adj_modified_3 = morph.parse(used_adj[2])[0].inflect(
+                                        {noun_acc_number_choice, "accs"}
+                                    )
+                                if used_adj_modified_3 is not None:
+                                    used_adj[2] = used_adj_modified_3.word
+
+                        NP = f"{' '.join(used_adj)} {noun_nom}{dual_nom}"
+
+                    elif structure_NP_podtype == 2:
+
+                        needed_NP.extend(("OL1", "PREP", "OA1"))
+
+                        adjective_NP2 = random.choice([False, random.choice(list(adjs.keys()))])
+                        adj_NP2_gender_check = morph.parse(noun_loc)[0].tag.gender
+                        if adjective_NP2 != False:
+                            needed_NP.append("AOL")
+                            GRAM["AOL"] = [
+                                adjective_NP2,
+                                "indef",
+                                "gen",
+                                GRAM["OL1"][3],
+                                nouns[morph.parse(noun_loc)[0].normal_form][2],
+                            ]
+                            if noun_loc_number_choice == "sing":
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect(
+                                        {adj_NP2_gender_check, noun_loc_number_choice, prepositions[preposition][0]}
+                                    )
+                                    .word
+                                )
+                            else:
+                                adjective_NP2 = (
+                                    morph.parse(adjective_NP2)[0]
+                                    .inflect({noun_loc_number_choice, prepositions[preposition][0]})
+                                    .word
+                                )
+
+                        adjective_NP2_return = f" {adjective_NP2}" if adjective_NP2 else ""
+
+                        NP = f"{noun_acc}{dual_acc} {preposition}{adjective_NP2_return} {noun_loc}{dual_loc}"
+
+                    VP_NP5_num = random.choice([2])
+                    if VP_NP5_num == 1:
+                        noun_gender_check = morph.parse(noun_nom)[0].tag.gender
+                        verb_person_check = morph.parse(verb_personal)[0].tag.person
+                        verb_tense_check = morph.parse(verb_personal)[0].tag.tense
+
+                        grammemes = set()
+                        grammemes.add(verb_tense_check)
+                        if verb_person_check != "3per" and verb_tense_check != "past":
+                            grammemes = {"3per"}
+                        if noun_nom_number_choice:
+                            grammemes.add(noun_nom_number_choice)
+                        else:
+                            grammemes.add("sing")
+                        if (
+                                noun_nom_number_choice == "sing"
+                                and verb_tense_check == "past"
+                                and noun_gender_check
+                        ):
+                            grammemes.add(noun_gender_check)
+                        inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
+                        VP_NP5 = f"{inflected_verb} {noun_nom}{dual_nom}"
+
+                    elif VP_NP5_num == 2:
+                        needed_NP.append("S2")
+                        verb_forms = [
+                            form.word
+                            for form in morph.parse(verb)[0].lexeme
+                            if "VERB" in form.tag
+                               and "impr" not in form.tag
+                               and "past" not in form.tag
+                        ]
+                        verb_personal = random.choice(verb_forms)
+
+                        noun_gender_check_sub = morph.parse(S_NP5)[0].tag.gender
+
+                        verb_person_check = morph.parse(verb_personal)[0].tag.person
+                        verb_tense_check = morph.parse(verb_personal)[0].tag.tense
+
+                        grammemes = set()
+                        grammemes.add(verb_tense_check)
+                        grammemes = {"3per"}
+                        if noun_nom_number_choice_sub:
+                            grammemes.add(noun_nom_number_choice_sub)
+                        else:
+                            grammemes.add("sing")
+                        if (
+                                noun_nom_number_choice_sub == "sing"
+                                and verb_tense_check == "past"
+                                and noun_gender_check_sub
+                        ):
+                            grammemes.add(noun_gender_check_sub)
+                        inflected_verb = morph.parse(verb_personal)[0].inflect(grammemes).word
+                        VP_NP5 = f"{inflected_verb}"
+
+                        GRAM["V2"] = [verb, []]
+                        if morph.parse(inflected_verb)[0].tag.tense == "past":
+                            GRAM["V2"][1].extend(("perf", "3"))
+                        else:
+                            GRAM["V2"][1].extend(
+                                ("imp", "3")
+                            )
+                        if morph.parse(inflected_verb)[0].tag.tense == "futr":
+                            GRAM["V2"][1].append("sawfa")
+                        if nouns[morph.parse(noun_nom_syr_sub)[0].normal_form][2] == "f":
+                            GRAM["V2"][1][1] += "f"
+                        elif nouns[morph.parse(noun_nom_syr_sub)[0].normal_form][2] == "m":
+                            GRAM["V2"][1][1] += "m"
+                        if morph.parse(S_NP5)[0].tag.number == "sing":
+                            GRAM["V2"][1][1] += "sg"
+                        elif dual_nom_sub == "(du)":
+                            GRAM["V2"][1][1] += "du"
+                        else:
+                            GRAM["V2"][1][1] += "pl"
+
+                    that5_gender_check = morph.parse(noun_nom)[0].tag.gender
+                    that5_animacy_check = morph.parse(noun_nom)[0].tag.animacy
+
+                    if noun_nom_number_choice == "plur":
+                        that_NP5 = "которые" if that5_animacy_check is None else "которых"
+                    else:
+                        if that5_gender_check == "masc":
+                            that_NP5 = "который" if that5_animacy_check is None else "которого"
+                        elif that5_gender_check == "femn":
+                            that_NP5 = "которую"
+                        elif that5_gender_check == "neut":
+                            that_NP5 = "которое"
+                    GRAM["THAT"] = [that_NP5, noun_nom + dual_nom]
+                    if VP_NP5_num == 2:
+                        return f"{noun_nom}{dual_nom}, {that_NP5} {VP_NP5} {S_NP5}"
+                    else:
+                        return f"{noun_nom}{dual_nom}, {that_NP5} {VP_NP5}"
+
+            structure_choice = random.choice([1, 2])
+
+            if structure_choice == 1:
+                res = structure_VP()
+                needed = needed_VP
+            elif structure_choice == 2:
+                res = structure_NP()
+                needed = needed_NP
+
+            GRAM = {key: value for key, value in GRAM.items() if key in needed}
+            results = ' '.join(res.split())
+
+        except:
+            rus_gen_with_arab()
+    rus_gen_with_arab()
+    bot.send_message(chat_id, f"Вот твоё предложение на перевод:\n{results}")
+
+    def rus_to_arab():
+        sent = []
+        global GRAM
+        global prepositions
+        if "V1" in GRAM.keys():
+            sent.append(verb_gen(GRAM["V1"]))
+        if "AS11" in GRAM.keys():
+            place = 0
+            if "f" in GRAM["AS11"]:
+                place += 1
+            if "du" in GRAM["AS11"]:
+                if "f" in GRAM["AS11"]:
+                    place += 1
+                place += 2
+            elif "pl" in GRAM["AS11"]:
+                place += 6
+
+            GRAM["AS11"] = determiners[GRAM["AS11"][0]][place]
+            if "AOG" in GRAM.keys():
+                sent.extend((GRAM["AS11"], declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AOG"]),
+                             adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
+            elif "OG1" in GRAM.keys():
+                sent.extend((
+                            GRAM["AS11"], declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AS12"]),
+                            adj_declension(GRAM["AS13"])))
+            else:
+                sent.extend(
+                    (GRAM["AS11"], declension(GRAM["S1"]), adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
+        elif "AS13" in GRAM.keys():
+            if "AOG" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AOG"]),
+                             adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
+            elif "OG1" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AS12"]),
+                             adj_declension(GRAM["AS13"])))
+            else:
+                sent.extend((declension(GRAM["S1"]), adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
+        elif "AS12" in GRAM.keys():
+            if "AOG" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AOG"]),
+                             adj_declension(GRAM["AS12"])))
+            elif "OG1" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AS12"])))
+            else:
+                sent.extend((declension(GRAM["S1"]), adj_declension(GRAM["AS12"])))
+        elif "S1" in GRAM.keys():
+            if "AOG" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AOG"])))
+            elif "OG1" in GRAM.keys():
+                sent.extend((declension(GRAM["S1"]), declension(GRAM["OG1"])))
+            else:
+                sent.append(declension(GRAM["S1"]))
+        if "AO11" in GRAM.keys():
+            place = 0
+            if "f" in GRAM["AO11"]:
+                place += 1
+            if "du" in GRAM["AO11"]:
+                if "f" in GRAM["AO11"]:
+                    place += 1
+                place += 3
+            elif "pl" in GRAM["AO11"]:
+                place += 6
+            GRAM["AO11"] = determiners[GRAM["AO11"][0]][place]
+            sent.extend(
+                (GRAM["AO11"], declension(GRAM["OA1"]), adj_declension(GRAM["AO12"]), adj_declension(GRAM["AO13"])))
+        elif "AO13" in GRAM.keys():
+            sent.extend((declension(GRAM["OA1"]), adj_declension(GRAM["AO12"]), adj_declension(GRAM["AO13"])))
+        elif "AO12" in GRAM.keys():
+            sent.extend((declension(GRAM["OA1"]), adj_declension(GRAM["AO12"])))
+        elif "OA1" in GRAM.keys():
+            sent.append(declension(GRAM["OA1"]))
+        if "AOL" in GRAM.keys() and "OL1" in GRAM.keys():
+            sent.extend((prepositions[GRAM["PREP"]][1], declension(GRAM["OL1"]), adj_declension(GRAM["AOL"])))
+        elif "OL1" in GRAM.keys():
+            sent.extend((prepositions[GRAM["PREP"]][1], declension(GRAM["OL1"])))
+        # не забыть написать функцию для THAT
+        if "THAT" in GRAM.keys():
+            if GRAM["THAT"][0] == "которая" or GRAM["THAT"][0] == "которую":
+                GRAM["V2"].append("allatī")
+                if GRAM["THAT"][0] == "которую":
+                    GRAM["V2"].append("suff")
+            elif GRAM["THAT"][0] == "который" or GRAM["THAT"][0] == "которого":
+                GRAM["V2"].append("allaḏī")
+                if GRAM["THAT"][0] == "которого":
+                    GRAM["V2"].append("suff")
+            elif "du" in GRAM["THAT"][1]:
+                if nouns[morph.parse(GRAM["THAT"][1][:-5])[0].normal_form][2] == "m":
+                    if GRAM["THAT"][0] == "которых":
+                        GRAM["V2"].append("allaḏayni")
+                        GRAM["V2"].append("suff")
+                    else:
+                        GRAM["V2"].append("allaḏāni")
+                elif nouns[morph.parse(GRAM["THAT"][1][:-5])[0].normal_form][2] == "f":
+                    if GRAM["THAT"][0] == "которых":
+                        GRAM["V2"].append("allatayni")
+                        GRAM["V2"].append("suff")
+                    else:
+                        GRAM["V2"].append("allatāni")
+            else:
+                if nouns[morph.parse(GRAM["THAT"][1])[0].normal_form][2] == "m":
+                    GRAM["V2"].append("ʾallaḏīna")
+                elif nouns[morph.parse(GRAM["THAT"][1])[0].normal_form][2] == "f":
+                    GRAM["V2"].append("ʾallātī")
+                if GRAM["THAT"][0] == "которых":
+                    GRAM["V2"].append("suff")
+
+            sent.append(verb_gen(GRAM["V2"]))
+            if "AS21" in GRAM.keys():
+                place = 0
+                if "f" in GRAM["AS21"]:
+                    place += 1
+                if "du" in GRAM["AS21"]:
+                    if "f" in GRAM["AS21"]:
+                        place += 1
+                    place += 2
+                elif "pl" in GRAM["AS21"]:
+                    place += 6
+                GRAM["AS21"] = determiners[GRAM["AS21"][0]][place]
+                if "AOG" in GRAM.keys():
+                    sent.extend((GRAM["AS21"], declension(GRAM["S2"]), declension(GRAM["OG2"]),
+                                 adj_declension(GRAM["AOG"]), adj_declension(GRAM["AS22"]),
+                                 adj_declension(GRAM["AS23"])))
+                elif "OG2" in GRAM.keys():
+                    sent.extend((GRAM["AS21"], declension(GRAM["S2"]), declension(GRAM["OG2"]),
+                                 adj_declension(GRAM["AS22"]), adj_declension(GRAM["AS23"])))
+                else:
+                    sent.extend((GRAM["AS21"], declension(GRAM["S2"]), adj_declension(GRAM["AS22"]),
+                                 adj_declension(GRAM["AS23"])))
+            elif "AS23" in GRAM.keys():
+                if "AOG" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"]), adj_declension(GRAM["AOG"]),
+                                 adj_declension(GRAM["AS22"]), adj_declension(GRAM["AS23"])))
+                elif "OG2" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"]), adj_declension(GRAM["AS22"]),
+                                 adj_declension(GRAM["AS23"])))
+                else:
+                    sent.extend((declension(GRAM["S2"]), adj_declension(GRAM["AS22"]), adj_declension(GRAM["AS23"])))
+            elif "AS22" in GRAM.keys():
+                if "AOG" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"]), adj_declension(GRAM["AOG"]),
+                                 adj_declension(GRAM["AS22"])))
+                elif "OG2" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"]), adj_declension(GRAM["AS22"])))
+                else:
+                    sent.extend((declension(GRAM["S2"]), adj_declension(GRAM["AS22"])))
+            elif "S2" in GRAM.keys():
+                if "AOG" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"]), adj_declension(GRAM["AOG"])))
+                elif "OG2" in GRAM.keys():
+                    sent.extend((declension(GRAM["S2"]), declension(GRAM["OG2"])))
+                else:
+                    sent.append(declension(GRAM["S2"]))
+            if "AO21" in GRAM.keys():
+                place = 0
+                if "f" in GRAM["AO21"]:
+                    place += 1
+                if "du" in GRAM["AO21"]:
+                    if "f" in GRAM["AO21"]:
+                        place += 1
+                    place += 3
+                elif "pl" in GRAM["AO21"]:
+                    place += 6
+                GRAM["AO21"] = determiners[GRAM["AO21"][0]][place]
+                sent.extend(
+                    (GRAM["AO21"], declension(GRAM["OA2"]), adj_declension(GRAM["AO22"]), adj_declension(GRAM["AO23"])))
+            elif "AO23" in GRAM.keys():
+                sent.extend((declension(GRAM["OA2"]), adj_declension(GRAM["AO22"]), adj_declension(GRAM["AO23"])))
+            elif "AO22" in GRAM.keys():
+                sent.extend((declension(GRAM["OA2"]), adj_declension(GRAM["AO22"])))
+            elif "OA2" in GRAM.keys():
+                sent.append(declension(GRAM["OA2"]))
+            if "AOL" in GRAM.keys() and "OL2" in GRAM.keys():
+                sent.extend((prepositions[GRAM["PREP"]][1], declension(GRAM["OL2"]), adj_declension(GRAM["AOL"])))
+            elif "OL2" in GRAM.keys():
+                sent.extend((prepositions[GRAM["PREP"]][1], declension(GRAM["OL2"])))
+
+        vows = ["a", "i", "u", "ā", "ī", "ū"]
+        sent = " ".join(sent)
+        for vow in vows:
+            sent = sent.replace(vow + ' a', vow + ' ')
+        sent = sent.replace('um a', 'um u')
+        sent = sent.replace('aw a', 'aw u')
+        sent = sent.replace(' a', ' i')
+        sent = sent.replace('min i', 'min a')
+
+        GRAM = {}
+
+        return sent
+
+
+    @bot.message_handler(content_types=['text'])
+    def func(message):
+        sentence = rus_to_arab()
+        result = check(message.text, sentence)
+        bot.send_message(chat_id, result)
+        keyboard = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton(text="Тренировка", callback_data="russian_to_arabic")
+        btn2 = types.InlineKeyboardButton(text="Словарь", callback_data="dictionary")
+        btn3 = types.InlineKeyboardButton(text="Инструкция", callback_data="instruction")
+        btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
+        keyboard.add(btn1, btn2, btn3, btn4)
+        bot.send_message(message.chat.id,
+                         text="Что дальше делать будем?".format(
+                             message.from_user), reply_markup=keyboard)
+
+
+
+bot = telebot.TeleBot(config.token)
+
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    keyboard = types.InlineKeyboardMarkup()
+    btn1 = types.InlineKeyboardButton(text="Тренировка", callback_data="russian_to_arabic")
+    btn2 = types.InlineKeyboardButton(text="Словарь", callback_data="dictionary")
+    btn3 = types.InlineKeyboardButton(text="Инструкция", callback_data="instruction")
+    btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
+    keyboard.add(btn1, btn2, btn3, btn4)
+    bot.send_message(message.chat.id,
+                     text="marhaban, {0.first_name}!\nЯ Грамматист, бот-тренажёр арабской грамматики\nВ меню ниже выбери, что ты хочешь сделать. Удачи!".format(
+                         message.from_user), reply_markup=keyboard)
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_query(call):
+    if call.data == "dictionary":
+        text = "Наш словарь можно найти [по ссылке](https://docs.google.com/spreadsheets/d/1tb764sl4aStLPghWLCr0rpsKx54EyCelgU-LTDC4954/edit?usp=sharing)"
+        bot.send_message(call.message.chat.id,
+                         text.format(
+                             call.message.from_user), parse_mode='Markdown')
+        keyboard = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton(text="Тренировка", callback_data="russian_to_arabic")
+        btn2 = types.InlineKeyboardButton(text="Словарь", callback_data="dictionary")
+        btn3 = types.InlineKeyboardButton(text="Инструкция", callback_data="instruction")
+        btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
+        keyboard.add(btn1, btn2, btn3, btn4)
+        bot.send_message(call.message.chat.id,
+                             text="Что дальше делать будем?".format(
+                                 call.message.from_user), reply_markup=keyboard)
+    elif call.data == "russian_to_arabic":
+        grammar(call.message.chat.id, bot)  # Передаем bot в функцию
+    elif call.data == "instruction":
+        text = "Всю информацию о переводе с русского на арабский можно найти [в этой инструкции](https://telegra.ph/Kak-zapisat-arabskoe-predlozhenie-latinicej-05-18)"
+        bot.send_message(call.message.chat.id,
+                         text.format(
+                             call.message.from_user), parse_mode='Markdown')
+        keyboard = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton(text="Тренировка", callback_data="russian_to_arabic")
+        btn2 = types.InlineKeyboardButton(text="Словарь", callback_data="dictionary")
+        btn3 = types.InlineKeyboardButton(text="Инструкция", callback_data="instruction")
+        btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
+        keyboard.add(btn1, btn2, btn3, btn4)
+        bot.send_message(call.message.chat.id,
+                         text="Что дальше делать будем?".format(
+                             call.message.from_user), reply_markup=keyboard)
+    elif call.data == "translit":
+        text = "Мы рекомендуем пользоваться [вот этой клавиатурой](https://www.lexilogos.com/keyboard/arabic_latin.htm). Если ты не уверен, какие символы можно использовать, то можешь вызвать инструкцию и посмотреть там:)\nЕсли до этого ты попросил предложение - не переживай! Ты можешь ввести свой ответ сейчас, и я его проверю!"
+        bot.send_message(call.message.chat.id,
+                         text.format(
+                             call.message.from_user), parse_mode='Markdown')
+        keyboard = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton(text="Тренировка", callback_data="russian_to_arabic")
+        btn2 = types.InlineKeyboardButton(text="Словарь", callback_data="dictionary")
+        btn3 = types.InlineKeyboardButton(text="Инструкция", callback_data="instruction")
+        btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
+        keyboard.add(btn1, btn2, btn3, btn4)
+        bot.send_message(call.message.chat.id,
+                         text="Что дальше делать будем?".format(
+                             call.message.from_user), reply_markup=keyboard)
+
+
+bot.polling(none_stop=True)
 
