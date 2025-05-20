@@ -734,7 +734,7 @@ def declension(noun: list):
     elif condition == "constr":
         return word
 
-
+#склонение плюралиса
 def pl_declension(word: str, condition: str, form: str):
     global nouns
     word_pl = nouns[word][1]
@@ -845,7 +845,7 @@ def adj_declension(adj: list):
     elif condition == "constr":
         return word
 
-
+#склонение прилагательных в плюралисе
 def adj_pl_declension(word, condition, form):
     global adjs
     word_pl = adjs[word][1]
@@ -928,6 +928,7 @@ def check(message, sentence):
 def grammar(chat_id, bot):
     global results
 
+#генерация арабского предложения
     def rus_gen_with_arab():
         global results
         try:
@@ -1089,6 +1090,7 @@ def grammar(chat_id, bot):
                     GRAM["V1"][1][1] += "sg"
             GRAM["V2"] = GRAM["V1"]
 
+#структура глагольного предложения
             def structure_VP():
 
                 global GRAM
@@ -1569,6 +1571,7 @@ def grammar(chat_id, bot):
 
                     return f"{verb_personal} {NP}"
 
+#структура именной группы
             def structure_NP():
 
                 global GRAM
