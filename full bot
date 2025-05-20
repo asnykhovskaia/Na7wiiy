@@ -13,8 +13,8 @@ results = ""
 
 prepositions = {
     "в": ['loct', 'fī'],
-    "на": ['loct','ʿalā'],
-    "из": ['gent','min'],
+    "на": ['loct', 'ʿalā'],
+    "из": ['gent', 'min'],
     "к": ['datv', 'ʾilā'],
     "с": ['ablt', 'maʿa'],
     "перед": ['ablt', 'ʾamāma'],
@@ -117,7 +117,7 @@ nouns = {
     'преподавательница': ['mudarrisat', 1, 'f'],
     'бухгалтерша': ['muḥāsibat', 1, 'f'],
     'студентка': ['ṭālibat', 1, 'f'],
-    'дочь': ['ʾibnat','banāt', 'f'],
+    'дочь': ['ʾibnat', 'banāt', 'f'],
     'внучка': ['ḥafīdat', 1, 'f'],
 }
 
@@ -205,7 +205,7 @@ verbs = {
     "помогать": ['sāʿada', 'i', 3, 0],
     "танцевать": ['raqaṣa', 'u', 1, 0],
     "петь": ['ranima', 'a', 1, 0],
-    "учить": ['ʿallama', 'i', 2, 0],  
+    "учить": ['ʿallama', 'i', 2, 0],
     "учиться": ['taʿallama', 'a', 5, 0],
     "переезжать": ['intaqala', 'i', 8, 0],
     "путешествовать": ['sāfara', 'i', 3, 0],
@@ -288,7 +288,7 @@ Adj = [
     "верный",
 ]
 
-nouns_anim_m= [
+nouns_anim_m = [
     "друг",
     "отец",
     "брат",
@@ -492,7 +492,9 @@ verbs_intrans = [
 
 # все функции
 morph = pymorphy3.MorphAnalyzer()
-#морфология глагола
+
+
+# морфология глагола
 def verb_gen(gram: list):
     global verbs
     global GRAM
@@ -553,7 +555,7 @@ def verb_gen(gram: list):
             elif form[1] == "1sg":
                 verb = "ʾa" + verb
                 if "ʾaʾ" in verb:
-                   verb = "ʾā" + verb[4:]
+                    verb = "ʾā" + verb[4:]
                 # диссимиляция хамзы
             elif form[1] == "1dp":
                 verb = "na" + verb
@@ -567,7 +569,7 @@ def verb_gen(gram: list):
             elif form[1] == "1sg":
                 verb = "ˀu" + verb
                 if "ʾuʾ" in verb:
-                   verb = "ʾū" + verb[4:]
+                    verb = "ʾū" + verb[4:]
                 # диссимиляция хамзы
             elif form[1] == "1dp":
                 verb = "nu" + verb
@@ -583,9 +585,9 @@ def verb_gen(gram: list):
             verb += "īna"
         else:
             verb += "u"
-    #СЛАБЫЕ
+    # СЛАБЫЕ
     zero = verb.find("0")
-    #удвоенный -- вроде работает
+    # удвоенный -- вроде работает
     if weak == 4:
         if form[0] == "perf":
             if "3" in form[1] and form[1] != "3fpl":
@@ -604,70 +606,71 @@ def verb_gen(gram: list):
                 else:
                     verb = verb[:-6] + vow + verb[-4] + verb[-4:]
 
-    #первый слабый
+    # первый слабый
     if weak == 1:
         if der == 8:
-            verb = verb.replace("0", verb[zero+1])
+            verb = verb.replace("0", verb[zero + 1])
         elif der == 1 and form[0] == "imp":
-            verb = verb[:zero] + verb[zero+1:]
+            verb = verb[:zero] + verb[zero + 1:]
         else:
             verb = verb.replace("0", "w")
 
-    #второй слабый -- вроде работает
+    # второй слабый -- вроде работает
     if weak == 2:
-        verb = verb[:zero] + verb[zero+1:]
+        verb = verb[:zero] + verb[zero + 1:]
         if der == 1 and form[0] == "perf":
             if vow == "i" or vow == "a":
-                verb = verb[:zero] + "i" + verb[zero+1:]
+                verb = verb[:zero] + "i" + verb[zero + 1:]
             elif vow == "u":
-                verb = verb[:zero] + "u" + verb[zero+1:]
+                verb = verb[:zero] + "u" + verb[zero + 1:]
         if form[0] == "perf":
-             if verb[zero+2] not in vows and verb[zero+2] not in vows[3]:
-                if verb[zero-1] in vows:
-                    verb = verb[:zero-1] + verb[zero:]
-             else:
-                if verb[zero-1] in vows:
-                    verb = verb[:zero-1] + "ā" + verb[zero+1:]
+            if verb[zero + 2] not in vows and verb[zero + 2] not in vows[3]:
+                if verb[zero - 1] in vows:
+                    verb = verb[:zero - 1] + verb[zero:]
+            else:
+                if verb[zero - 1] in vows:
+                    verb = verb[:zero - 1] + "ā" + verb[zero + 1:]
                 else:
-                    verb = verb[:zero] + "ā" + verb[zero+1:]
+                    verb = verb[:zero] + "ā" + verb[zero + 1:]
         else:
-            if verb[zero+2] in vows or verb[zero+2] in vows[3]:
-                verb = verb[:zero] + vows[3][vows.index(verb[zero])] + verb[zero+1:]
-            if verb[zero-1] in vows:
-                verb = verb[:zero-1] + verb[zero:]
+            if verb[zero + 2] in vows or verb[zero + 2] in vows[3]:
+                verb = verb[:zero] + vows[3][vows.index(verb[zero])] + verb[zero + 1:]
+            if verb[zero - 1] in vows:
+                verb = verb[:zero - 1] + verb[zero:]
 
-    #третий слабый
+    # третий слабый
     if zero != -1 and weak == 3:
-        #если в основе а -- теперь работает
-        if verb[zero-1] == "a":
-            if verb[zero + 1] not in vows[3] and verb[zero + 1] in vows: #and (zero == len(verb) - 3 and verb[-2] in vows or zero > len(verb) - 3):
-                if verb[zero-1] in vows and verb[zero+1] in vows:
-                    verb = verb[:zero+1] + verb[zero+2:]
-                    if verb[-1] == "0" or verb[zero+1] in vows:
-                        verb = verb.replace(verb[zero-1] + "0", vows[3][vows.index(verb[zero-1])] + "0")
-                verb = verb[:zero] + verb[zero+1:]
-            if verb[zero-1] in vows:
+        # если в основе а -- теперь работает
+        if verb[zero - 1] == "a":
+            if verb[zero + 1] not in vows[3] and verb[
+                zero + 1] in vows:  # and (zero == len(verb) - 3 and verb[-2] in vows or zero > len(verb) - 3):
+                if verb[zero - 1] in vows and verb[zero + 1] in vows:
+                    verb = verb[:zero + 1] + verb[zero + 2:]
+                    if verb[-1] == "0" or verb[zero + 1] in vows:
+                        verb = verb.replace(verb[zero - 1] + "0", vows[3][vows.index(verb[zero - 1])] + "0")
+                verb = verb[:zero] + verb[zero + 1:]
+            if verb[zero - 1] in vows:
                 verb = verb.replace("0ū", "w")
                 verb = verb.replace("0ī", "y")
             if vow == "i" or vow == "a":
                 verb = verb.replace("0", "y")
             elif vow == "u":
                 verb = verb.replace("0", "w")
-        #если в основе не а -- теперь работает
-        elif verb[zero-1] != "a":
-            if verb[zero+1] != "a" and verb[zero+1] != "ā":
-                verb = verb[:zero] + verb[zero+1:]
-                if verb[zero-1] in vows and verb[zero] in vows[3]:
-                    verb = verb[:zero-1] + verb[zero:]
-                if verb[zero-1] in vows and verb[zero-1] not in vows[3]:
+        # если в основе не а -- теперь работает
+        elif verb[zero - 1] != "a":
+            if verb[zero + 1] != "a" and verb[zero + 1] != "ā":
+                verb = verb[:zero] + verb[zero + 1:]
+                if verb[zero - 1] in vows and verb[zero] in vows[3]:
+                    verb = verb[:zero - 1] + verb[zero:]
+                if verb[zero - 1] in vows and verb[zero - 1] not in vows[3]:
                     if verb[zero] == "t":
-                        verb = verb.replace(verb[zero-1] + "t", vows[3][vows.index(verb[zero-1])] + "t")
+                        verb = verb.replace(verb[zero - 1] + "t", vows[3][vows.index(verb[zero - 1])] + "t")
                     elif verb[zero] == "n":
-                        verb = verb.replace(verb[zero-1] + "n", vows[3][vows.index(verb[zero-1])] + "n")
-                    elif verb[zero-1] == verb[-2]:
-                        verb = verb.replace(verb[zero-1], vows[3][vows.index(verb[zero-1])])
+                        verb = verb.replace(verb[zero - 1] + "n", vows[3][vows.index(verb[zero - 1])] + "n")
+                    elif verb[zero - 1] == verb[-2]:
+                        verb = verb.replace(verb[zero - 1], vows[3][vows.index(verb[zero - 1])])
                     if verb[zero] in vows or verb[zero] in vows[3]:
-                        verb = verb[:zero] + verb[zero+1:]
+                        verb = verb[:zero] + verb[zero + 1:]
             if vow == "i" or vow == "a":
                 verb = verb.replace("0", "y")
             elif vow == "u":
@@ -682,12 +685,11 @@ def verb_gen(gram: list):
     if len(gram) >= 3:
         verb = gram[2] + " " + verb
     if len(gram) > 3:
-        verb += clitics[gram[-2]][length+harmony]
+        verb += clitics[gram[-2]][length + harmony]
     return verb
 
 
-
-#склонение
+# склонение
 
 
 def declension(noun: list):
@@ -792,7 +794,7 @@ def pl_declension(word: str, condition: str, form: str):
     return word
 
 
-#склонение прилагательных
+# склонение прилагательных
 
 def adj_declension(adj: list):
     global adjs
@@ -853,6 +855,7 @@ def adj_declension(adj: list):
     elif condition == "constr":
         return word
 
+
 def adj_pl_declension(word, condition, form):
     global adjs
     word_pl = adjs[word][1]
@@ -909,8 +912,6 @@ def adj_pl_declension(word, condition, form):
     return word
 
 
-
-
 # проверка предложений
 
 def check(message, sentence):
@@ -936,6 +937,7 @@ def check(message, sentence):
 
 def grammar(chat_id, bot):
     global results
+
     def rus_gen_with_arab():
         global results
         try:
@@ -2373,6 +2375,7 @@ def grammar(chat_id, bot):
 
         except:
             rus_gen_with_arab()
+
     rus_gen_with_arab()
     bot.send_message(chat_id, f"Вот твоё предложение на перевод:\n{results}")
 
@@ -2399,8 +2402,8 @@ def grammar(chat_id, bot):
                              adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
             elif "OG1" in GRAM.keys():
                 sent.extend((
-                            GRAM["AS11"], declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AS12"]),
-                            adj_declension(GRAM["AS13"])))
+                    GRAM["AS11"], declension(GRAM["S1"]), declension(GRAM["OG1"]), adj_declension(GRAM["AS12"]),
+                    adj_declension(GRAM["AS13"])))
             else:
                 sent.extend(
                     (GRAM["AS11"], declension(GRAM["S1"]), adj_declension(GRAM["AS12"]), adj_declension(GRAM["AS13"])))
@@ -2565,7 +2568,6 @@ def grammar(chat_id, bot):
 
         return sent
 
-
     @bot.message_handler(content_types=['text'])
     def func(message):
         sentence = rus_to_arab()
@@ -2580,7 +2582,6 @@ def grammar(chat_id, bot):
         bot.send_message(message.chat.id,
                          text="Что дальше делать будем?".format(
                              message.from_user), reply_markup=keyboard)
-
 
 
 bot = telebot.TeleBot(config.token)
@@ -2598,6 +2599,7 @@ def start(message):
                      text="marhaban, {0.first_name}!\nЯ Грамматист, бот-тренажёр арабской грамматики\nВ меню ниже выбери, что ты хочешь сделать. Удачи!".format(
                          message.from_user), reply_markup=keyboard)
 
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
     if call.data == "dictionary":
@@ -2612,8 +2614,8 @@ def callback_query(call):
         btn4 = types.InlineKeyboardButton(text="Клавиатура для транслитерации", callback_data="translit")
         keyboard.add(btn1, btn2, btn3, btn4)
         bot.send_message(call.message.chat.id,
-                             text="Что дальше делать будем?".format(
-                                 call.message.from_user), reply_markup=keyboard)
+                         text="Что дальше делать будем?".format(
+                             call.message.from_user), reply_markup=keyboard)
     elif call.data == "russian_to_arabic":
         grammar(call.message.chat.id, bot)  # Передаем bot в функцию
     elif call.data == "instruction":
@@ -2647,4 +2649,3 @@ def callback_query(call):
 
 
 bot.polling(none_stop=True)
-
