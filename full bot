@@ -491,8 +491,8 @@ def verb_gen(gram: list):
     clitics = {
         "allatī": ["hā", "hā", "hā", "hā"],
         "allaḏī": ['hu', 'hi', 'hū', 'hī'],
-        "ʾallaḏīna": ['hum', 'him', 'hum', 'him'],
-        "ʾallātī": ['hunna', 'hinna', 'hunna', 'hinna'],
+        "allaḏīna": ['hum', 'him', 'hum', 'him'],
+        "allātī": ['hunna', 'hinna', 'hunna', 'hinna'],
         "allaḏayni": ['humā', 'himā', 'humā', 'himā'],
         "allatayni": ['humā', 'himā', 'humā', 'himā']
     }
