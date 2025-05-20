@@ -114,7 +114,7 @@ nouns = {
     'бухгалтерша': ['muḥāsibat', 1, 'f'],
     'студентка': ['ṭālibat', 1, 'f'],
     'дочь': ['ʾibnat', 'banāt', 'f'],
-    'внучка': ['ḥafīdat', 1, 'f'],
+    'внучка': ['ḥafīdat', 1, 'f']
 }
 
 adjs = {
@@ -166,7 +166,7 @@ adjs = {
 
 determiners = {
     "этот": ['hāḏā', 'hāḏihī', 'hāḏāni', 'hāḏayni', 'hātāni', 'hātayni', 'hāʾulāʾi', 'hāʾulāʾi'],
-    "тот": ['ḏālika', 'tilka', 'ḏānika', 'ḏaynika', 'tānika', 'tilka', 'ʾulāʾika', 'ʾulāʾika'],
+    "тот": ['ḏālika', 'tilka', 'ḏānika', 'ḏaynika', 'tānika', 'tilka', 'ʾulāʾika', 'ʾulāʾika']
 }
 
 verbs = {
@@ -280,7 +280,7 @@ Adj = [
     "важный",
     "общий",
     "главный",
-    "верный",
+    "верный"
 ]
 
 nouns_anim_m = [
